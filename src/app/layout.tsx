@@ -12,7 +12,7 @@ const description =
   "Renato Manzotti, sviluppatore web: siti, app e bot su misura per PMI e professionisti. Veloci, ottimizzati per Google e pensati per portarti clienti.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://renato-portfolio-gamma.vercel.app"),
   title: `${profile.name} · Siti web, app e bot su misura`,
   description,
   keywords: ["sviluppatore web", "siti web", "app su misura", "bot WhatsApp", "PMI", "freelance", "Next.js"],
