@@ -6,7 +6,7 @@ import { useRef } from "react";
 type MagneticButtonProps = {
   href: string;
   children: React.ReactNode;
-  variant?: "primary" | "ghost";
+  variant?: "primary" | "ghost" | "whatsapp";
   external?: boolean;
   className?: string;
 };
@@ -15,6 +15,9 @@ const styles = {
   primary:
     "bg-violet text-ink shadow-[0_0_40px_-8px_var(--color-violet)] hover:shadow-[0_0_60px_-4px_var(--color-violet)]",
   ghost: "border border-line bg-white/[0.03] text-snow backdrop-blur hover:border-cyber/60 hover:text-cyber",
+  // Il verde di WhatsApp: riconoscibile a colpo d'occhio anche da chi non è pratico.
+  whatsapp:
+    "bg-whatsapp text-ink text-base font-semibold shadow-[0_0_40px_-8px_var(--color-whatsapp)] hover:shadow-[0_0_60px_-4px_var(--color-whatsapp)]",
 };
 
 /** Link a forma di bottone che viene "attirato" dal cursore. */

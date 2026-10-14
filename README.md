@@ -1,6 +1,6 @@
 # Renato Manzotti · Portfolio
 
-Sito portfolio personale: siti web, app e bot su misura per PMI e professionisti.
+Sito portfolio personale: siti web, app e bot su misura per aziende e professionisti.
 
 **Stack:** Next.js (App Router) · TypeScript · Tailwind CSS v4 · Framer Motion · Three.js (React Three Fiber)
 
@@ -42,9 +42,11 @@ public/img/                 foto e screenshot (WebP)
 Quasi tutto si cambia da `src/lib/data.ts`:
 
 - **Nuovo progetto:** aggiungi un oggetto a `projects` (screenshot in `public/img/projects/`).
-  `status: "concluso"` lo fa comparire nel filtro "Conclusi".
   `span` decide la dimensione nella griglia, `visual` come vengono disposti gli screenshot.
 - **Prezzi del preventivo:** `quoteTypes`, `quoteExtras`, `quoteUrgency`.
+  `priceFactor` (ora `0.8`, cioè -20%) si applica a tutti i prezzi: con `1` tornano quelli pieni.
+- **Extra del preventivo:** il campo `for` di ogni extra dice per quali servizi compare
+  (`"all"` per tutti); `featured: true` lo mette in evidenza.
 - **Punteggi Lighthouse:** `lighthouse` (sono valori dimostrativi: sostituiscili con le misure reali).
 
 ## Form contatti

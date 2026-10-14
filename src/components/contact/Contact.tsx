@@ -9,7 +9,7 @@ import { SectionHeading } from "../ui/SectionHeading";
 import { ContactForm } from "./ContactForm";
 
 const channels = [
-  { label: "WhatsApp", value: "Scrivimi in chat", href: profile.whatsappHref, icon: WhatsAppIcon, external: true },
+  { label: "WhatsApp", value: "Scrivimi in chat", href: profile.whatsappHref, icon: WhatsAppIcon, external: true, whatsapp: true },
   { label: "Telefono", value: profile.phone, href: profile.phoneHref, icon: PhoneIcon, copy: profile.phone },
   { label: "Email", value: profile.email, href: profile.emailHref, icon: MailIcon, copy: profile.email },
 ];
@@ -22,7 +22,7 @@ export function Contact() {
         eyebrow="// contatti"
         title={
           <>
-            Hai un&apos;idea? <span className="text-gradient">Trasformiamola in clienti.</span>
+            Hai un&apos;idea? <span className="text-gradient">Trasformiamola in realtà.</span>
           </>
         }
         intro="Raccontami la tua attività e cosa ti serve. Il primo confronto e il preventivo sono gratuiti e senza impegno."
@@ -55,9 +55,10 @@ type ChannelProps = {
   icon: (p: React.SVGProps<SVGSVGElement>) => React.ReactElement;
   external?: boolean;
   copy?: string;
+  whatsapp?: boolean;
 };
 
-function ContactChannel({ label, value, href, icon: Icon, external, copy }: ChannelProps) {
+function ContactChannel({ label, value, href, icon: Icon, external, copy, whatsapp }: ChannelProps) {
   const [copied, setCopied] = useState(false);
 
   const onCopy = async () => {
@@ -78,8 +79,12 @@ function ContactChannel({ label, value, href, icon: Icon, external, copy }: Chan
         {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
         className="flex min-w-0 flex-1 items-center gap-4 rounded-2xl p-2"
       >
-        <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-violet/15 text-violet-soft transition-colors group-hover:bg-violet group-hover:text-ink">
-          <Icon />
+        <span
+          className={`grid size-12 shrink-0 place-items-center rounded-2xl transition-colors ${
+            whatsapp ? "bg-whatsapp text-ink" : "bg-violet/15 text-violet-soft group-hover:bg-violet group-hover:text-ink"
+          }`}
+        >
+          <Icon width={22} height={22} />
         </span>
         <span className="min-w-0">
           <span className="block font-mono text-xs text-mist">{label}</span>

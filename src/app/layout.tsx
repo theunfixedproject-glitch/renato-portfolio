@@ -9,13 +9,13 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const fira = Fira_Code({ subsets: ["latin"], variable: "--font-fira" });
 
 const description =
-  "Renato Manzotti, sviluppatore web: siti, app e bot su misura per PMI e professionisti. Veloci, ottimizzati per Google e pensati per portarti clienti.";
+  "Renato Manzotti, sviluppatore web: siti, app e bot su misura per aziende e professionisti. Veloci, ottimizzati per Google e pensati per portarti clienti.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://renato-portfolio-gamma.vercel.app"),
   title: `${profile.name} · Siti web, app e bot su misura`,
   description,
-  keywords: ["sviluppatore web", "siti web", "app su misura", "bot WhatsApp", "PMI", "freelance", "Next.js"],
+  keywords: ["sviluppatore web", "siti web", "app su misura", "bot WhatsApp", "aziende", "freelance", "Next.js"],
   authors: [{ name: profile.name }],
   openGraph: {
     title: `${profile.name} · Web & App Developer`,

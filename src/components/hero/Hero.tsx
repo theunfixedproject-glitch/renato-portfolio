@@ -29,11 +29,9 @@ export function Hero() {
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink" />
       </div>
 
-      <motion.div
-        style={{ opacity: fade }}
-        className="mx-auto grid min-h-svh max-w-7xl items-center gap-12 px-5 pt-28 pb-16 sm:px-8 lg:grid-cols-[1.25fr_1fr] lg:gap-8"
-      >
-        <div>
+      <div className="mx-auto grid min-h-svh max-w-7xl items-center gap-12 px-5 pt-28 pb-16 sm:px-8 lg:grid-cols-[1.25fr_1fr] lg:gap-8">
+        {/* Sfuma solo il testo: la foto, che su mobile arriva dopo, resta sempre ben visibile. */}
+        <motion.div style={{ opacity: fade }}>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -68,7 +66,7 @@ export function Hero() {
             transition={{ delay: 0.7, duration: 0.7 }}
             className="mt-7 max-w-xl text-lg leading-relaxed text-mist md:text-xl"
           >
-            Aiuto <strong className="font-semibold text-snow">PMI e professionisti</strong> a trovare clienti online e a
+            Aiuto <strong className="font-semibold text-snow">aziende e professionisti</strong> a trovare clienti online e a
             risparmiare tempo: siti veloci che si fanno trovare su Google, app su misura e bot che rispondono al posto
             tuo.
           </motion.p>
@@ -82,8 +80,8 @@ export function Hero() {
             <MagneticButton href="#preventivo">
               Calcola il preventivo <ArrowIcon width={16} height={16} />
             </MagneticButton>
-            <MagneticButton href={profile.whatsappHref} external variant="ghost">
-              <WhatsAppIcon width={16} height={16} /> Scrivimi su WhatsApp
+            <MagneticButton href={profile.whatsappHref} external variant="whatsapp">
+              <WhatsAppIcon width={22} height={22} strokeWidth={2.2} /> Scrivimi su WhatsApp
             </MagneticButton>
           </motion.div>
 
@@ -102,7 +100,7 @@ export function Hero() {
               </li>
             ))}
           </motion.ul>
-        </div>
+        </motion.div>
 
         <motion.div
           style={{ y: photoY }}
@@ -124,8 +122,8 @@ export function Hero() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-5">
-                <p className="font-display text-2xl font-bold">{profile.firstName}</p>
-                <p className="font-mono text-xs text-mist">
+                <p className="neon-green font-display text-3xl font-bold">{profile.firstName}</p>
+                <p className="neon-violet mt-1 font-mono text-xs leading-relaxed">
                   {profile.age} anni · sviluppo su misura dal primo pixel all&apos;ultima riga
                 </p>
               </div>
@@ -148,7 +146,7 @@ export function Hero() {
             <span className="text-violet-soft">{"<"}</span>su misura<span className="text-violet-soft">{" />"}</span>
           </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
 
       <a
         href="#chi-sono"

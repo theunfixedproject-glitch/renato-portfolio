@@ -44,11 +44,10 @@ export function ProjectCard({ project, onOpen }: ProjectCardProps) {
 
   return (
     <motion.article
-      layout
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ duration: 0.4 }}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       style={{ rotateX: rx, rotateY: ry, transformPerspective: 1200 }}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
@@ -164,7 +163,7 @@ function ProjectVisual({ project }: { project: Project }) {
 }
 
 export function StatusBadge({ status }: { status: Project["status"] }) {
-  const done = status === "concluso";
+  const done = status === "online";
   return (
     <span
       className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 font-mono text-[11px] backdrop-blur ${
@@ -172,7 +171,7 @@ export function StatusBadge({ status }: { status: Project["status"] }) {
       }`}
     >
       <span className={`size-1.5 rounded-full ${done ? "bg-cyber" : "animate-pulse bg-violet"}`} aria-hidden />
-      {done ? "Concluso" : "In sviluppo"}
+      {done ? "Online" : "In sviluppo"}
     </span>
   );
 }

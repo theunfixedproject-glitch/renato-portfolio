@@ -10,6 +10,7 @@ export const profile = {
   role: "Web & App Developer",
   phone: "+39 338 863 7995",
   phoneHref: "tel:+393388637995",
+  whatsappBase: "https://wa.me/393388637995",
   whatsappHref:
     "https://wa.me/393388637995?text=" +
     encodeURIComponent("Ciao Renato, ho visto il tuo portfolio e vorrei parlarti di un progetto."),
@@ -61,7 +62,7 @@ export const services: Service[] = [
   },
 ];
 
-export type ProjectStatus = "concluso" | "in-sviluppo";
+export type ProjectStatus = "in-sviluppo" | "online";
 
 export type Project = {
   id: string;
@@ -200,6 +201,9 @@ export const lighthouse = [
 /* Preventivo rapido: tutti i prezzi in euro, modificabili qui.        */
 /* ------------------------------------------------------------------ */
 
+/** Moltiplicatore applicato a tutti i prezzi: 0.8 = sconto del 20%. Con 1 tornano i prezzi pieni. */
+export const priceFactor = 0.8;
+
 export type QuoteType = {
   id: string;
   label: string;
@@ -221,17 +225,42 @@ export const quoteTypes: QuoteType[] = [
   { id: "bot", label: "Bot / automazione", hint: "WhatsApp, Telegram, sito", base: [400, 1500], weeks: [1, 3], perUnit: 80, includedUnits: 3, unitLabel: "flussi" },
 ];
 
-export type QuoteExtra = { id: string; label: string; price: [number, number]; weeks: number };
+export type QuoteExtra = {
+  id: string;
+  label: string;
+  price: [number, number];
+  weeks: number;
+  /** Per quali servizi ha senso: compare solo se ne è selezionato almeno uno. */
+  for: string[] | "all";
+  /** Spiegazione breve mostrata sotto agli extra in evidenza. */
+  hint?: string;
+  featured?: boolean;
+};
 
 export const quoteExtras: QuoteExtra[] = [
-  { id: "design", label: "Design su misura (logo e identità)", price: [300, 700], weeks: 1 },
-  { id: "seo", label: "SEO avanzata e Google Business", price: [250, 500], weeks: 0.5 },
-  { id: "cms", label: "Pannello per modificare i contenuti", price: [300, 600], weeks: 1 },
-  { id: "lang", label: "Più lingue", price: [200, 450], weeks: 0.5 },
-  { id: "pay", label: "Pagamenti online", price: [300, 650], weeks: 1 },
-  { id: "auth", label: "Area riservata / login", price: [400, 900], weeks: 1 },
-  { id: "integrations", label: "Integrazioni (CRM, calendario, gestionale)", price: [350, 900], weeks: 1 },
-  { id: "maintenance", label: "Manutenzione per 12 mesi", price: [300, 600], weeks: 0 },
+  {
+    id: "quote",
+    label: "Preventivatore online",
+    hint: "Come quello che stai usando adesso: i tuoi clienti si calcolano il prezzo da soli e ti arrivano già convinti.",
+    price: [350, 800],
+    weeks: 1,
+    for: "all",
+    featured: true,
+  },
+  { id: "design", label: "Logo e identità visiva", price: [300, 700], weeks: 1, for: ["landing", "vetrina", "ecommerce", "webapp", "app"] },
+  { id: "seo", label: "SEO avanzata e scheda Google Business", price: [250, 500], weeks: 0.5, for: ["landing", "vetrina", "ecommerce"] },
+  { id: "cms", label: "Pannello per modificare i contenuti", price: [300, 600], weeks: 1, for: ["vetrina", "ecommerce"] },
+  { id: "booking", label: "Prenotazioni e appuntamenti online", price: [350, 800], weeks: 1, for: ["vetrina", "webapp", "app", "bot"] },
+  { id: "auth", label: "Area clienti con login", price: [400, 900], weeks: 1, for: ["vetrina", "ecommerce", "app"] },
+  { id: "pay", label: "Pagamenti online", price: [300, 650], weeks: 1, for: ["webapp", "app", "bot"] },
+  { id: "shipping", label: "Spedizioni e tracciamento ordini", price: [300, 700], weeks: 1, for: ["ecommerce"] },
+  { id: "dashboard", label: "Dashboard con statistiche", price: [350, 800], weeks: 1, for: ["ecommerce", "webapp", "app"] },
+  { id: "push", label: "Notifiche push", price: [200, 450], weeks: 0.5, for: ["webapp", "app"] },
+  { id: "stores", label: "Pubblicazione su Play Store e App Store", price: [250, 500], weeks: 0.5, for: ["app"] },
+  { id: "ai", label: "Risposte con intelligenza artificiale", price: [300, 800], weeks: 1, for: ["bot"] },
+  { id: "integrations", label: "Integrazioni (CRM, calendario, gestionale)", price: [350, 900], weeks: 1, for: ["vetrina", "ecommerce", "webapp", "app", "bot"] },
+  { id: "lang", label: "Più lingue", price: [200, 450], weeks: 0.5, for: "all" },
+  { id: "maintenance", label: "Manutenzione per 12 mesi", price: [300, 600], weeks: 0, for: "all" },
 ];
 
 export const quoteUrgency = [

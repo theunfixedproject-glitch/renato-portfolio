@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { cloneElement, useEffect, useId, useRef, useState } from "react";
 import { profile, quoteTypes } from "@/lib/data";
-import { PREFILL_EVENT, type PrefillDetail } from "@/lib/events";
+import { MULTI_SERVICE_LABEL, PREFILL_EVENT, type PrefillDetail } from "@/lib/events";
 import { ArrowIcon } from "../ui/Icons";
 
 type Status = "idle" | "sending" | "sent" | "mailto" | "error";
@@ -11,7 +11,7 @@ type Fields = { name: string; email: string; phone: string; type: string; messag
 type Errors = Partial<Record<keyof Fields, string>>;
 
 const empty: Fields = { name: "", email: "", phone: "", type: "", message: "", website: "" };
-const projectTypes = [...quoteTypes.map((t) => t.label), "Altro / non lo so ancora"];
+const projectTypes = [...quoteTypes.map((t) => t.label), MULTI_SERVICE_LABEL, "Altro / non lo so ancora"];
 
 function validate(f: Fields): Errors {
   const e: Errors = {};
