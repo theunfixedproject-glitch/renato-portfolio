@@ -46,7 +46,7 @@ export function MagneticButton({ href, children, variant = "primary", external, 
       onPointerLeave={reset}
       style={{ x, y }}
       whileTap={{ scale: 0.96 }}
-      className={`inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 font-mono text-sm font-medium transition-[box-shadow,border-color,color] duration-300 ${styles[variant]} ${className}`}
+      className={`shine inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 font-mono text-sm font-medium transition-[box-shadow,border-color,color] duration-300 ${styles[variant]} ${className}`}
     >
       {children}
     </motion.a>

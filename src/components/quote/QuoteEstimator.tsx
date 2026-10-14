@@ -42,7 +42,8 @@ export function QuoteEstimator() {
     <section aria-labelledby="preventivo-title" id="preventivo" className="section">
       <SectionHeading
         id="preventivo-title"
-        eyebrow="// preventivo rapido"
+        index="04"
+        eyebrow="preventivo rapido"
         title={
           <>
             Quanto costa il tuo progetto? <span className="text-gradient">Scoprilo ora.</span>
@@ -53,7 +54,7 @@ export function QuoteEstimator() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="card space-y-10 p-6 md:p-8">
-          <fieldset>
+          <fieldset className="min-w-0">
             <legend className="eyebrow mb-2">{step++} · Cosa ti serve?</legend>
             <p className="mb-4 text-sm text-mist">Puoi sceglierne più di uno.</p>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -116,12 +117,12 @@ export function QuoteEstimator() {
             )}
           </AnimatePresence>
 
-          <fieldset>
+          <fieldset className="min-w-0">
             <legend className="eyebrow mb-2">{step++} · Extra</legend>
             <p className="mb-4 text-sm text-mist">
               {input.typeIds.length ? "Solo quelli che hanno senso per ciò che hai scelto." : "Scegli prima un servizio."}
             </p>
-            <motion.div layout className="flex flex-wrap gap-2">
+            <motion.div layout className="flex min-w-0 flex-wrap gap-2">
               <AnimatePresence initial={false} mode="popLayout">
                 {input.typeIds.length > 0 &&
                   extras.map((extra) => (
@@ -131,7 +132,7 @@ export function QuoteEstimator() {
             </motion.div>
           </fieldset>
 
-          <fieldset>
+          <fieldset className="min-w-0">
             <legend className="eyebrow mb-4">{step++} · Tempistica</legend>
             <div className="inline-flex rounded-full border border-line p-1">
               {quoteUrgency.map((u) => (
@@ -158,7 +159,7 @@ export function QuoteEstimator() {
         </div>
 
         <aside aria-label="La tua stima" className="lg:sticky lg:top-24 lg:self-start">
-          <div className="relative overflow-hidden rounded-3xl border border-violet/40 bg-gradient-to-br from-violet/20 via-coal to-coal p-6 md:p-8">
+          <div className="beam relative overflow-hidden rounded-3xl border border-violet/20 bg-gradient-to-br from-violet/20 via-coal to-coal p-6 md:p-8">
             <div className="pointer-events-none absolute -top-20 -right-20 size-56 rounded-full bg-cyber/20 blur-3xl" />
             <p className="eyebrow">la tua stima</p>
             <p className="sr-only" aria-live="polite">
@@ -238,20 +239,18 @@ function ExtraChip({ extra, on, onToggle }: { extra: QuoteExtra; on: boolean; on
         type="button"
         onClick={onToggle}
         aria-pressed={on}
-        className={`relative w-full overflow-hidden rounded-2xl border p-4 text-left transition-colors ${
+        className={`beam relative w-full max-w-full overflow-hidden rounded-2xl border p-4 text-left transition-colors ${
           on ? "border-cyber bg-cyber/10" : "border-violet/60 bg-violet/10 hover:border-violet"
         }`}
       >
-        <span className="flex items-center justify-between gap-3">
-          <span className={`flex items-center gap-2 font-display text-lg font-bold ${on ? "text-cyber" : ""}`}>
-            <span aria-hidden className="font-mono">
-              {on ? "✓" : "+"}
-            </span>
-            {extra.label}
+        <span className="mb-2 inline-block rounded-full bg-violet px-2.5 py-1 font-mono text-[10px] tracking-wider text-ink uppercase">
+          Consigliato
+        </span>
+        <span className={`flex items-center gap-2 font-display text-lg font-bold ${on ? "text-cyber" : ""}`}>
+          <span aria-hidden className="font-mono">
+            {on ? "✓" : "+"}
           </span>
-          <span className="shrink-0 rounded-full bg-violet px-2.5 py-1 font-mono text-[10px] tracking-wider text-ink uppercase">
-            Consigliato
-          </span>
+          {extra.label}
         </span>
         {extra.hint && <span className="mt-2 block text-sm leading-relaxed text-mist">{extra.hint}</span>}
       </motion.button>
@@ -264,7 +263,7 @@ function ExtraChip({ extra, on, onToggle }: { extra: QuoteExtra; on: boolean; on
       type="button"
       onClick={onToggle}
       aria-pressed={on}
-      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-left text-sm transition-colors ${
+      className={`inline-flex max-w-full items-center gap-2 rounded-full border px-4 py-2 text-left text-sm transition-colors ${
         on ? "border-cyber bg-cyber/10 text-cyber" : "border-line text-mist hover:text-snow"
       }`}
     >

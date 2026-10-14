@@ -4,9 +4,35 @@ import { AnimatePresence, motion, useScroll, useSpring } from "framer-motion";
 import { useEffect, useState } from "react";
 import { navLinks, profile } from "@/lib/data";
 
+/** Sezione attualmente sullo schermo, per evidenziare la voce giusta del menu. */
+function useActiveSection() {
+  const [active, setActive] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sections = navLinks.map((l) => document.querySelector<HTMLElement>(l.href)).filter((el): el is HTMLElement => !!el);
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) if (entry.isIntersecting) setActive(`#${entry.target.id}`);
+      },
+      // Conta come "attiva" la sezione che attraversa la fascia centrale dello schermo.
+      { rootMargin: "-45% 0px -50% 0px" },
+    );
+    sections.forEach((s) => io.observe(s));
+    const onTop = () => window.scrollY < window.innerHeight * 0.5 && setActive(null);
+    window.addEventListener("scroll", onTop, { passive: true });
+    return () => {
+      io.disconnect();
+      window.removeEventListener("scroll", onTop);
+    };
+  }, []);
+
+  return active;
+}
+
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const active = useActiveSection();
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
 
@@ -24,101 +50,129 @@ export function Navbar() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const floating = scrolled || open;
+
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color] duration-500 ${
-        scrolled || open ? "border-b border-line/70 bg-ink/75 backdrop-blur-xl" : "border-b border-transparent"
-      }`}
-    >
+    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5">
       <a
         href="#contenuto"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:rounded-full focus:bg-cyber focus:px-4 focus:py-2 focus:text-ink"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-10 focus:rounded-full focus:bg-cyber focus:px-4 focus:py-2 focus:text-ink"
       >
         Vai al contenuto
       </a>
-      <nav aria-label="Principale" className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
-        <a href="#top" className="group flex items-center gap-2 font-display text-lg font-bold">
-          <span className="grid size-8 place-items-center rounded-lg bg-violet font-mono text-sm text-ink transition-transform group-hover:rotate-12">
-            RM
-          </span>
-          <span className="hidden sm:inline">{profile.name}</span>
-        </a>
 
-        <ul className="hidden items-center gap-1 md:flex">
-          {navLinks.map((link) => (
-            <li key={link.href}>
-              <a
-                href={link.href}
-                className="rounded-full px-4 py-2 font-mono text-xs tracking-wide text-mist transition-colors hover:bg-white/5 hover:text-snow"
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-
-        <div className="flex items-center gap-2">
-          <a
-            href="#contatti"
-            className="hidden rounded-full bg-cyber px-5 py-2 font-mono text-xs font-medium text-ink transition-shadow hover:shadow-[0_0_30px_-4px_var(--color-cyber)] sm:inline-flex"
-          >
-            Parliamone
-          </a>
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-controls="menu-mobile"
-            aria-label={open ? "Chiudi il menu" : "Apri il menu"}
-            className="grid size-10 place-items-center rounded-full border border-line md:hidden"
-          >
-            <span className="relative block h-3 w-4">
-              <span className={`absolute left-0 h-0.5 w-4 bg-snow transition-all ${open ? "top-1.5 rotate-45" : "top-0"}`} />
-              <span className={`absolute left-0 h-0.5 w-4 bg-snow transition-all ${open ? "top-1.5 -rotate-45" : "top-2.5"}`} />
+      <div
+        className={`relative mx-auto overflow-hidden border transition-[max-width,background-color,border-color,border-radius,box-shadow] duration-500 ${
+          floating
+            ? "max-w-5xl border-white/10 bg-ink/70 shadow-[0_10px_50px_-20px_rgba(162,89,255,0.45)] backdrop-blur-xl"
+            : "max-w-7xl border-transparent"
+        } ${open ? "rounded-3xl" : "rounded-full"}`}
+      >
+        <nav aria-label="Principale" className="flex h-14 items-center justify-between pr-2 pl-3 sm:pl-4">
+          <a href="#top" className="group flex items-center gap-2 font-display text-lg font-bold">
+            <span className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-violet to-violet-soft font-mono text-sm text-ink shadow-[0_0_20px_-4px_var(--color-violet)] transition-transform duration-500 group-hover:rotate-[360deg]">
+              RM
             </span>
-          </button>
-        </div>
-      </nav>
+            <span className="hidden sm:inline">{profile.name}</span>
+          </a>
 
-      <AnimatePresence>
-        {open && (
-          <motion.ul
-            id="menu-mobile"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden px-5 md:hidden"
-          >
-            {navLinks.map((link, i) => (
-              <motion.li
-                key={link.href}
-                initial={{ x: -16, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.04 * i }}
-              >
-                <a
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className="block border-b border-line/60 py-4 font-display text-2xl font-bold"
+          <ul className="hidden items-center md:flex">
+            {navLinks.map((link) => {
+              const isActive = active === link.href;
+              return (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    aria-current={isActive ? "location" : undefined}
+                    className={`relative block rounded-full px-4 py-2 font-mono text-xs tracking-wide transition-colors ${
+                      isActive ? "text-snow" : "text-mist hover:text-snow"
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-active"
+                        className="absolute inset-0 rounded-full border border-white/10 bg-white/[0.07]"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative">{link.label}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="flex items-center gap-2">
+            <a
+              href="#contatti"
+              className="shine hidden rounded-full bg-cyber px-5 py-2.5 font-mono text-xs font-medium text-ink transition-shadow hover:shadow-[0_0_30px_-4px_var(--color-cyber)] sm:inline-flex"
+            >
+              Parliamone
+            </a>
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              aria-controls="menu-mobile"
+              aria-label={open ? "Chiudi il menu" : "Apri il menu"}
+              className="grid size-10 place-items-center rounded-full border border-line bg-ink/40 md:hidden"
+            >
+              <span className="relative block h-3 w-4">
+                <span className={`absolute left-0 h-0.5 w-4 bg-snow transition-all ${open ? "top-1.5 rotate-45" : "top-0"}`} />
+                <span className={`absolute left-0 h-0.5 w-4 bg-snow transition-all ${open ? "top-1.5 -rotate-45" : "top-2.5"}`} />
+              </span>
+            </button>
+          </div>
+        </nav>
+
+        <AnimatePresence>
+          {open && (
+            <motion.ul
+              id="menu-mobile"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden px-5 md:hidden"
+            >
+              {navLinks.map((link, i) => (
+                <motion.li
+                  key={link.href}
+                  initial={{ x: -16, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.04 * i }}
                 >
-                  {link.label}
+                  <a
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    className="flex items-baseline gap-3 border-b border-line/60 py-4 font-display text-2xl font-bold"
+                  >
+                    <span className="font-mono text-xs text-cyber">{String(i + 1).padStart(2, "0")}</span>
+                    {link.label}
+                  </a>
+                </motion.li>
+              ))}
+              <li className="py-5">
+                <a
+                  href={profile.whatsappHref}
+                  className="flex items-center justify-center rounded-full bg-whatsapp py-3 font-semibold text-ink"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Scrivimi su WhatsApp
                 </a>
-              </motion.li>
-            ))}
-            <li className="py-5">
-              <a href={profile.whatsappHref} className="font-mono text-sm text-cyber" target="_blank" rel="noopener noreferrer">
-                Scrivimi su WhatsApp →
-              </a>
-            </li>
-          </motion.ul>
-        )}
-      </AnimatePresence>
+              </li>
+            </motion.ul>
+          )}
+        </AnimatePresence>
 
-      <motion.div
-        aria-hidden
-        style={{ scaleX: progress }}
-        className="absolute bottom-0 left-0 h-px w-full origin-left bg-gradient-to-r from-violet to-cyber"
-      />
+        <motion.div
+          aria-hidden
+          style={{ scaleX: progress }}
+          className={`absolute bottom-0 left-0 h-px w-full origin-left bg-gradient-to-r from-violet to-cyber transition-opacity ${
+            floating ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      </div>
     </header>
   );
 }

@@ -51,7 +51,7 @@ export function ProjectCard({ project, onOpen }: ProjectCardProps) {
       style={{ rotateX: rx, rotateY: ry, transformPerspective: 1200 }}
       onPointerMove={onMove}
       onPointerLeave={onLeave}
-      className={`group relative isolate flex flex-col overflow-hidden rounded-3xl border border-line bg-coal md:block ${project.span}`}
+      className={`beam-hover group relative isolate flex flex-col overflow-hidden rounded-3xl border border-line bg-coal md:block ${project.span}`}
     >
       <motion.div aria-hidden className="pointer-events-none absolute inset-0 z-20" style={{ background: spotlight }} />
       <div aria-hidden className={`absolute inset-0 -z-10 bg-gradient-to-br ${a.bg} via-transparent to-transparent`} />

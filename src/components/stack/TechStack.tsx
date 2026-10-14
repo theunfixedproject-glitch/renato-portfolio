@@ -9,10 +9,12 @@ const half = Math.ceil(techStack.length / 2);
 export function TechStack() {
   return (
     <section aria-labelledby="stack-title" id="stack" className="relative py-24 md:py-32">
+      <div aria-hidden className="bg-dots absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_at_center,#000_20%,transparent_70%)]" />
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeading
           id="stack-title"
-          eyebrow="// stack & metriche"
+          index="03"
+        eyebrow="stack & metriche"
           title={
             <>
               Tecnologie moderne, <span className="text-gradient">risultati misurabili.</span>
@@ -28,7 +30,7 @@ export function TechStack() {
       </div>
 
       <div className="mx-auto mt-20 max-w-7xl px-5 sm:px-8">
-        <Reveal className="card p-8 md:p-12">
+        <Reveal className="card beam p-8 md:p-12">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow">google lighthouse</p>

@@ -5,6 +5,27 @@ import { profile, services } from "@/lib/data";
 import { Reveal } from "../ui/Reveal";
 import { SectionHeading } from "../ui/SectionHeading";
 
+const serviceIcons: Record<string, React.ReactNode> = {
+  web: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18M7 6.5h.01M10 6.5h.01M9 14l-2 1.5L9 17M15 14l2 1.5-2 1.5" />
+    </>
+  ),
+  app: (
+    <>
+      <rect x="6" y="2" width="12" height="20" rx="3" />
+      <path d="M10 18h4M9 7h6M9 11h4" />
+    </>
+  ),
+  bot: (
+    <>
+      <rect x="4" y="7" width="16" height="12" rx="3" />
+      <path d="M12 3v4M9 12h.01M15 12h.01M9.5 15.5h5M2 12v3M22 12v3" />
+    </>
+  ),
+};
+
 const steps = [
   { n: "01", title: "Ascolto", text: "Una chiamata per capire la tua attività, i tuoi clienti e l'obiettivo." },
   { n: "02", title: "Proposta", text: "Preventivo chiaro, tempi certi e un primo design da toccare con mano." },
@@ -17,7 +38,8 @@ export function About() {
     <section aria-labelledby="chi-sono-title" id="chi-sono" className="section">
       <SectionHeading
         id="chi-sono-title"
-        eyebrow="// chi sono"
+        index="01"
+        eyebrow="chi sono"
         title={
           <>
             Uno sviluppatore, <span className="text-gradient">un referente</span>, zero intermediari.
@@ -38,13 +60,26 @@ export function About() {
             <motion.article
               whileHover={{ y: -6 }}
               transition={{ type: "spring", stiffness: 300, damping: 22 }}
-              className="card group relative h-full overflow-hidden p-7"
+              className="card beam-hover group relative h-full overflow-hidden p-7"
             >
               <div className="pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-violet/0 blur-3xl transition-colors duration-500 group-hover:bg-violet/30" />
-              <p className="font-mono text-xs text-mist">{service.tag}</p>
+              <span
+                aria-hidden
+                className="text-outline pointer-events-none absolute -right-2 -bottom-6 font-display text-[9rem] leading-none font-extrabold opacity-40 transition-opacity duration-500 group-hover:opacity-80"
+              >
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="flex items-center justify-between">
+                <span className="grid size-12 place-items-center rounded-2xl border border-violet/30 bg-violet/10 text-violet-soft transition-colors duration-500 group-hover:border-cyber/50 group-hover:bg-cyber/10 group-hover:text-cyber">
+                  <svg viewBox="0 0 24 24" width={24} height={24} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    {serviceIcons[service.id]}
+                  </svg>
+                </span>
+                <p className="font-mono text-xs text-mist">{service.tag}</p>
+              </div>
               <h3 className="mt-6 font-display text-3xl font-bold">{service.title}</h3>
               <p className="mt-4 leading-relaxed text-mist">{service.description}</p>
-              <ul className="mt-6 space-y-2 border-t border-line pt-6 font-mono text-sm">
+              <ul className="relative mt-6 space-y-2 border-t border-line pt-6 font-mono text-sm">
                 {service.outcomes.map((o) => (
                   <li key={o} className="flex gap-3">
                     <span className="text-cyber" aria-hidden>
@@ -60,7 +95,7 @@ export function About() {
       </div>
 
       <Reveal className="mt-20">
-        <h3 className="eyebrow mb-8">// come lavoro</h3>
+        <h3 className="eyebrow mb-8">come lavoro</h3>
         <ol className="grid gap-px overflow-hidden rounded-3xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step) => (
             <li key={step.n} className="group bg-ink p-7 transition-colors hover:bg-coal">

@@ -102,7 +102,7 @@ export function ContactForm() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, boxShadow: flash ? "0 0 0 2px var(--color-cyber)" : "0 0 0 0px transparent" }}
             exit={{ opacity: 0, scale: 0.97 }}
-            className="card space-y-6 p-6 md:p-8"
+            className="card beam-hover space-y-6 p-6 md:p-8"
             aria-describedby={`${id}-required`}
           >
             <p id={`${id}-required`} className="font-mono text-xs text-mist">

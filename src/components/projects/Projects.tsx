@@ -16,7 +16,8 @@ export function Projects() {
     <section aria-labelledby="progetti-title" id="progetti" className="section">
       <SectionHeading
         id="progetti-title"
-        eyebrow="// lavori personali"
+        index="02"
+        eyebrow="lavori personali"
         title={
           <>
             Prodotti veri, <span className="text-gradient">costruiti da zero.</span>

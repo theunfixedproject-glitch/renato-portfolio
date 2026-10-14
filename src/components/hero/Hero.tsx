@@ -20,6 +20,8 @@ export function Hero() {
   const { scrollYProgress } = useScroll({ target: section, offset: ["start start", "end start"] });
   const photoY = useTransform(scrollYProgress, [0, 1], [0, 120]);
   const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  // La foto sfuma solo in parte; nome e bio, al neon, restano sempre accesi sopra.
+  const photoFade = useTransform(scrollYProgress, [0, 0.8], [1, 0.35]);
 
   return (
     <section ref={section} id="top" aria-labelledby="hero-title" className="relative isolate min-h-svh overflow-hidden">
@@ -110,16 +112,18 @@ export function Hero() {
           className="relative mx-auto w-full max-w-md lg:max-w-none"
         >
           <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-br from-violet/40 via-transparent to-cyber/30 blur-3xl" />
-          <div className="group relative overflow-hidden rounded-[2rem] border border-line bg-coal p-2">
+          <div className="beam group relative overflow-hidden rounded-[2rem] border border-line bg-coal p-2">
             <div className="relative aspect-[4/5] overflow-hidden rounded-[1.6rem]">
-              <Image
-                src={profile.photo}
-                alt={`${profile.name} alla sua postazione di lavoro`}
-                fill
-                priority
-                sizes="(min-width: 1024px) 40vw, 90vw"
-                className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
-              />
+              <motion.div style={{ opacity: photoFade }} className="absolute inset-0">
+                <Image
+                  src={profile.photo}
+                  alt={`${profile.name} alla sua postazione di lavoro`}
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 40vw, 90vw"
+                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                />
+              </motion.div>
               <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-5">
                 <p className="neon-green font-display text-3xl font-bold">{profile.firstName}</p>
@@ -131,6 +135,7 @@ export function Hero() {
           </div>
 
           <motion.div
+            style={{ opacity: photoFade }}
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
             className="absolute top-8 -left-4 rounded-2xl border border-line bg-ink/80 px-4 py-3 font-mono text-xs backdrop-blur sm:-left-10"
@@ -139,6 +144,7 @@ export function Hero() {
             <span className="text-mist">/100</span>
           </motion.div>
           <motion.div
+            style={{ opacity: photoFade }}
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             className="absolute -right-3 bottom-24 rounded-2xl border border-violet/40 bg-ink/80 px-4 py-3 font-mono text-xs backdrop-blur sm:-right-8"
@@ -148,19 +154,6 @@ export function Hero() {
         </motion.div>
       </div>
 
-      <a
-        href="#chi-sono"
-        className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 font-mono text-[10px] tracking-[0.3em] text-mist uppercase md:flex"
-      >
-        Scorri
-        <span className="h-10 w-px overflow-hidden bg-line">
-          <motion.span
-            className="block h-4 w-px bg-cyber"
-            animate={{ y: [-16, 40] }}
-            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </span>
-      </a>
     </section>
   );
 }

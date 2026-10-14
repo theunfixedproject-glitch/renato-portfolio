@@ -16,10 +16,11 @@ const channels = [
 
 export function Contact() {
   return (
-    <section aria-labelledby="contatti-title" id="contatti" className="section">
+    <section aria-labelledby="contatti-title" id="contatti" className="section" data-hide-floating-wa>
       <SectionHeading
         id="contatti-title"
-        eyebrow="// contatti"
+        index="05"
+        eyebrow="contatti"
         title={
           <>
             Hai un&apos;idea? <span className="text-gradient">Trasformiamola in realtà.</span>
