@@ -9,10 +9,10 @@ function useActiveSection() {
   const [active, setActive] = useState<string | null>(null);
 
   useEffect(() => {
-    const sections = navLinks.map((l) => document.querySelector<HTMLElement>(l.href)).filter((el): el is HTMLElement => !!el);
+    const sections = navLinks.map((l) => document.getElementById(l.id)).filter((el): el is HTMLElement => !!el);
     const io = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) if (entry.isIntersecting) setActive(`#${entry.target.id}`);
+        for (const entry of entries) if (entry.isIntersecting) setActive(entry.target.id);
       },
       // Conta come "attiva" la sezione che attraversa la fascia centrale dello schermo.
       { rootMargin: "-45% 0px -50% 0px" },
@@ -54,18 +54,24 @@ export function Navbar() {
 
   // L'animazione di chiusura del menu mobile annulla lo scroll del browser:
   // ci si ricorda la destinazione e si scorre quando il menu è sparito del tutto.
-  const pendingHref = useRef<string | null>(null);
-  const goTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  // Dalle altre pagine (es. /lavori/...) si torna alla home sulla sezione giusta.
+  const pendingId = useRef<string | null>(null);
+  const goTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
-    pendingHref.current = href;
+    pendingId.current = id;
     setOpen(false);
   };
   const scrollToPending = () => {
-    const href = pendingHref.current;
-    pendingHref.current = null;
-    if (!href) return;
-    document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    history.replaceState(null, "", href);
+    const id = pendingId.current;
+    pendingId.current = null;
+    if (!id) return;
+    const target = document.getElementById(id);
+    if (!target) {
+      window.location.assign(`/#${id}`);
+      return;
+    }
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    history.replaceState(null, "", `#${id}`);
   };
 
   return (
@@ -85,7 +91,7 @@ export function Navbar() {
         } ${open ? "rounded-3xl" : "rounded-full"}`}
       >
         <nav aria-label="Principale" className="flex h-14 items-center justify-between pr-2 pl-3 sm:pl-4">
-          <a href="#top" className="group flex items-center gap-2 font-display text-lg font-bold">
+          <a href="/" className="group flex items-center gap-2 font-display text-lg font-bold">
             <span className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-violet to-violet-soft font-mono text-sm text-ink shadow-[0_0_20px_-4px_var(--color-violet)] transition-transform duration-500 group-hover:rotate-[360deg]">
               RM
             </span>
@@ -94,11 +100,11 @@ export function Navbar() {
 
           <ul className="hidden items-center md:flex">
             {navLinks.map((link) => {
-              const isActive = active === link.href;
+              const isActive = active === link.id;
               return (
-                <li key={link.href}>
+                <li key={link.id}>
                   <a
-                    href={link.href}
+                    href={`/#${link.id}`}
                     aria-current={isActive ? "location" : undefined}
                     className={`relative block rounded-full px-4 py-2 font-mono text-xs tracking-wide transition-colors ${
                       isActive ? "text-snow" : "text-mist hover:text-snow"
@@ -120,7 +126,7 @@ export function Navbar() {
 
           <div className="flex items-center gap-2">
             <a
-              href="#contatti"
+              href="/#contatti"
               className="shine hidden rounded-full bg-cyber px-5 py-2.5 font-mono text-xs font-medium text-ink transition-shadow hover:shadow-[0_0_30px_-4px_var(--color-cyber)] sm:inline-flex"
             >
               Parliamone
@@ -152,14 +158,14 @@ export function Navbar() {
             >
               {navLinks.map((link, i) => (
                 <motion.li
-                  key={link.href}
+                  key={link.id}
                   initial={{ x: -16, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.04 * i }}
                 >
                   <a
-                    href={link.href}
-                    onClick={(e) => goTo(e, link.href)}
+                    href={`/#${link.id}`}
+                    onClick={(e) => goTo(e, link.id)}
                     className="flex items-baseline gap-3 border-b border-line/60 py-4 font-display text-2xl font-bold"
                   >
                     <span className="font-mono text-xs text-cyber">{String(i + 1).padStart(2, "0")}</span>

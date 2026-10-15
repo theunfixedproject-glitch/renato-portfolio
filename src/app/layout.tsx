@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Fira_Code, Inter, Syne } from "next/font/google";
+import { Ambient } from "@/components/layout/Ambient";
+import { FloatingWhatsApp } from "@/components/layout/FloatingWhatsApp";
+import { Footer } from "@/components/layout/Footer";
+import { Navbar } from "@/components/layout/Navbar";
 import { Providers } from "@/components/Providers";
 import { profile } from "@/lib/data";
 import "./globals.css";
@@ -45,7 +49,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="it" className={`${syne.variable} ${inter.variable} ${fira.variable}`}>
       <body className="grain">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-        <Providers>{children}</Providers>
+        <Providers>
+          <Ambient />
+          <Navbar />
+          {children}
+          <Footer />
+          <FloatingWhatsApp />
+        </Providers>
       </body>
     </html>
   );

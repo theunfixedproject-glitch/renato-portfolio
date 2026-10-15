@@ -19,7 +19,7 @@ export function Contact() {
     <section aria-labelledby="contatti-title" id="contatti" className="section" data-hide-floating-wa>
       <SectionHeading
         id="contatti-title"
-        index="05"
+        index="06"
         eyebrow="contatti"
         title={
           <>

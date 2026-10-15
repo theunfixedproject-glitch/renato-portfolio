@@ -9,7 +9,7 @@ export function Footer() {
 
       <div className="relative mx-auto max-w-7xl px-5 pt-24 pb-10 sm:px-8">
         <p className="eyebrow">il prossimo passo</p>
-        <a href="#contatti" className="group mt-6 block w-fit">
+        <a href="/#contatti" className="group mt-6 block w-fit">
           <span className="block font-display text-[clamp(2rem,8.5vw,7.5rem)] leading-[0.9] font-extrabold tracking-tight">
             Parliamone<span className="text-cyber">.</span>
           </span>
@@ -42,14 +42,14 @@ export function Footer() {
           </p>
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             {navLinks.map((l) => (
-              <li key={l.href}>
-                <a href={l.href} className="transition-colors hover:text-snow">
+              <li key={l.id}>
+                <a href={`/#${l.id}`} className="transition-colors hover:text-snow">
                   {l.label}
                 </a>
               </li>
             ))}
             <li>
-              <a href="#top" className="text-cyber transition-colors hover:text-snow">
+              <a href="#" className="text-cyber transition-colors hover:text-snow">
                 Torna su ↑
               </a>
             </li>

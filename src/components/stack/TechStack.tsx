@@ -13,7 +13,7 @@ export function TechStack() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeading
           id="stack-title"
-          index="03"
+          index="04"
         eyebrow="stack & metriche"
           title={
             <>

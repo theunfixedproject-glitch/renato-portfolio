@@ -19,13 +19,59 @@ export const profile = {
   photo: "/img/renato.webp",
 } as const;
 
+/** Voci del menu: puntano alle sezioni della home, quindi funzionano anche dalle altre pagine. */
 export const navLinks = [
-  { href: "#chi-sono", label: "Chi sono" },
-  { href: "#progetti", label: "Progetti" },
-  { href: "#stack", label: "Stack" },
-  { href: "#preventivo", label: "Preventivo" },
-  { href: "#contatti", label: "Contatti" },
+  { id: "chi-sono", label: "Chi sono" },
+  { id: "lavori", label: "Lavori" },
+  { id: "prima-dopo", label: "Prima e dopo" },
+  { id: "preventivo", label: "Preventivo" },
+  { id: "contatti", label: "Contatti" },
 ] as const;
+
+/* ------------------------------------------------------------------ */
+/* Lavori personali, divisi per categoria                              */
+/* ------------------------------------------------------------------ */
+
+export type CategoryId = "applicazioni" | "videogiochi" | "siti-web" | "bot-dashboard";
+
+export type Category = {
+  id: CategoryId;
+  label: string;
+  tagline: string;
+  description: string;
+  accent: "violet" | "green";
+};
+
+export const categories: Category[] = [
+  {
+    id: "applicazioni",
+    label: "Applicazioni",
+    tagline: "Social, produttività, strumenti",
+    description: "App per telefono e browser: chat in tempo reale, profili, notifiche, dati che restano sincronizzati.",
+    accent: "violet",
+  },
+  {
+    id: "videogiochi",
+    label: "Videogiochi",
+    tagline: "Gestionali, carte, mondi isometrici",
+    description: "Giochi completi, dalla grafica all'economia di gioco: la prova che so tenere in piedi progetti complessi.",
+    accent: "green",
+  },
+  {
+    id: "siti-web",
+    label: "Siti web",
+    tagline: "Vetrine, prenotazioni, restyling",
+    description: "Siti veloci e curati, pensati per farti trovare su Google e trasformare le visite in richieste.",
+    accent: "green",
+  },
+  {
+    id: "bot-dashboard",
+    label: "Bot & dashboard",
+    tagline: "Automazioni, pannelli, statistiche",
+    description: "Bot che rispondono ai clienti e pannelli di controllo per tenere tutto sotto controllo da un'unica schermata.",
+    accent: "violet",
+  },
+];
 
 export type Service = {
   id: string;
@@ -66,6 +112,7 @@ export type ProjectStatus = "in-sviluppo" | "online";
 
 export type Project = {
   id: string;
+  category: CategoryId;
   name: string;
   kind: string;
   status: ProjectStatus;
@@ -78,16 +125,13 @@ export type Project = {
   cover: string;
   /** Orientamento delle immagini: decide come vengono impaginate. */
   orientation: "portrait" | "landscape";
-  /** Come si dispongono gli screenshot nella card (da tablet in su). */
-  visual: "side" | "bottom" | "peek" | "cover";
   gallery: { src: string; alt: string }[];
-  /** Posizione nella bento grid (classi Tailwind per le colonne/righe). */
-  span: string;
 };
 
 export const projects: Project[] = [
   {
     id: "rivvo",
+    category: "applicazioni",
     name: "Rivvo",
     kind: "App social · mobile",
     status: "in-sviluppo",
@@ -99,17 +143,16 @@ export const projects: Project[] = [
     accent: "violet",
     cover: "/img/projects/rivvo-home.webp",
     orientation: "portrait",
-    visual: "side",
     gallery: [
       { src: "/img/projects/rivvo-home.webp", alt: "Rivvo: home con flash, sfide e bozze" },
       { src: "/img/projects/rivvo-chat.webp", alt: "Rivvo: chat con una sfida ai dadi" },
       { src: "/img/projects/rivvo-sfida.webp", alt: "Rivvo: creazione guidata di una nuova sfida" },
       { src: "/img/projects/rivvo-profilo.webp", alt: "Rivvo: profilo con livello, XP e statistiche" },
     ],
-    span: "md:col-span-4 md:row-span-2",
   },
   {
     id: "ritmo",
+    category: "applicazioni",
     name: "Ritmo",
     kind: "Produttività · mobile",
     status: "in-sviluppo",
@@ -121,12 +164,11 @@ export const projects: Project[] = [
     accent: "green",
     cover: "/img/projects/ritmo.webp",
     orientation: "portrait",
-    visual: "peek",
     gallery: [{ src: "/img/projects/ritmo.webp", alt: "Ritmo: la giornata di oggi con abitudini e attività" }],
-    span: "md:col-span-2",
   },
   {
     id: "distretto",
+    category: "videogiochi",
     name: "Distretto",
     kind: "Gioco gestionale · mobile",
     status: "in-sviluppo",
@@ -138,7 +180,6 @@ export const projects: Project[] = [
     accent: "green",
     cover: "/img/projects/distretto-centrale.webp",
     orientation: "portrait",
-    visual: "bottom",
     gallery: [
       { src: "/img/projects/distretto-centrale.webp", alt: "Distretto: la centrale vista dall'alto" },
       { src: "/img/projects/distretto-citta.webp", alt: "Distretto: la città con i quartieri e le chiamate" },
@@ -147,10 +188,10 @@ export const projects: Project[] = [
       { src: "/img/projects/distretto-personale.webp", alt: "Distretto: elenco del personale" },
       { src: "/img/projects/distretto-splash.webp", alt: "Distretto: schermata di avvio" },
     ],
-    span: "md:col-span-2 md:row-span-2",
   },
   {
     id: "vicarius",
+    category: "videogiochi",
     name: "Vicarius",
     kind: "Gioco di carte · web",
     status: "in-sviluppo",
@@ -162,9 +203,7 @@ export const projects: Project[] = [
     accent: "violet",
     cover: "/img/projects/vicarius.webp",
     orientation: "landscape",
-    visual: "cover",
     gallery: [{ src: "/img/projects/vicarius.webp", alt: "Vicarius: la regia con i cinque monitor del menu" }],
-    span: "md:col-span-4 md:row-span-2",
   },
 ];
 
@@ -268,3 +307,56 @@ export const quoteUrgency = [
   { id: "normal", label: "Normale", multiplier: 1, weekFactor: 1 },
   { id: "rush", label: "Urgente", multiplier: 1.25, weekFactor: 0.7 },
 ] as const;
+
+/* ------------------------------------------------------------------ */
+/* Prima e dopo: restyling di siti di strutture ricettive (di fantasia) */
+/* ------------------------------------------------------------------ */
+
+export type Makeover = {
+  id: "rosa" | "nosiola" | "arcadia";
+  name: string;
+  place: string;
+  /** Indirizzo di fantasia mostrato nella barra del browser. */
+  url: string;
+  verdict: string;
+  fixes: { before: string; after: string }[];
+};
+
+export const makeovers: Makeover[] = [
+  {
+    id: "rosa",
+    name: "B&B Da Rosa",
+    place: "Paesino tra i vigneti",
+    url: "bbdarosa.it",
+    verdict: "Un posto bellissimo, raccontato da un sito fermo al 2014.",
+    fixes: [
+      { before: "Foto minuscola e sgranata", after: "Paesaggio a tutto schermo: si vende da solo" },
+      { before: "\"Per prenotare telefonare ore pasti\"", after: "Date e ospiti in primo piano, si prenota in 3 tocchi" },
+      { before: "Muro di testo in corpo 11", after: "Tre righe chiare: cosa offri e perché sceglierti" },
+    ],
+  },
+  {
+    id: "nosiola",
+    name: "B&B La Nosiola",
+    place: "Centro storico",
+    url: "lanosiola.it/index.php/it",
+    verdict: "La posizione è il punto forte, ma era sepolta sotto moduli e banner.",
+    fixes: [
+      { before: "Banner cookie che copre metà pagina", after: "Consenso discreto, a norma e fuori dai piedi" },
+      { before: "\"Area riservata\" e login che nessuno usa", after: "Solo quello che serve all'ospite: camere, prezzi, contatti" },
+      { before: "\"50 metri dalla piazza\" nascosto nel testo", after: "La posizione è il titolo, con il prezzo in vista" },
+    ],
+  },
+  {
+    id: "arcadia",
+    name: "B&B Arcadia",
+    place: "Giardino in città",
+    url: "bb-arcadia.it",
+    verdict: "Scritte che scorrono, verde su nero e un video che non si apre più.",
+    fixes: [
+      { before: "Contenuto in Flash: oggi non si apre su nessun dispositivo", after: "Immagini e testi che funzionano ovunque, telefono compreso" },
+      { before: "Dodici miniature sfocate", after: "Il giardino, cioè il motivo per cui ti scelgono, protagonista" },
+      { before: "\"OFFERTA SPECIALE!!!\" che scorre", after: "Tono calmo, servizi chiari e WhatsApp a portata di mano" },
+    ],
+  },
+];

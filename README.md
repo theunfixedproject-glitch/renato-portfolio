@@ -18,13 +18,15 @@ npm run build && npm start
 src/
 ├─ app/
 │  ├─ layout.tsx            font (Syne, Inter, Fira Code), SEO, JSON-LD
-│  ├─ page.tsx              compone le sezioni
+│  ├─ page.tsx              compone le sezioni della home
+│  ├─ lavori/               pagina /lavori e /lavori/[categoria]
 │  ├─ globals.css           tema Tailwind (colori neon, font, marquee)
 │  └─ api/contact/route.ts  invio del form (Resend, facoltativo)
 ├─ components/
 │  ├─ hero/                 Hero + ParticleField (onde di particelle 3D che seguono il mouse)
 │  ├─ about/                Chi sono, servizi, metodo di lavoro
-│  ├─ projects/             Bento grid, card con spotlight/tilt, modale con galleria
+│  ├─ projects/             Card delle categorie in home e schede complete dei progetti
+│  ├─ makeovers/            "Prima e dopo": confronto con maniglia e mockup dei siti
 │  ├─ stack/                Marquee delle tecnologie + indicatori Lighthouse
 │  ├─ quote/                Preventivo rapido con stima di costi e tempi
 │  ├─ contact/              Recapiti + form con animazione di invio
@@ -41,8 +43,11 @@ public/img/                 foto e screenshot (WebP)
 
 Quasi tutto si cambia da `src/lib/data.ts`:
 
-- **Nuovo progetto:** aggiungi un oggetto a `projects` (screenshot in `public/img/projects/`).
-  `span` decide la dimensione nella griglia, `visual` come vengono disposti gli screenshot.
+- **Nuovo progetto:** aggiungi un oggetto a `projects` (screenshot in `public/img/projects/`) con la sua
+  `category` (`applicazioni`, `videogiochi`, `siti-web`, `bot-dashboard`): compare da solo nella pagina
+  `/lavori/<categoria>` e nel conteggio della card in home.
+- **Prima e dopo:** testi in `makeovers`; i mockup sono componenti in `src/components/makeovers/sites.tsx`
+  (disegnati a 1280×800) e le illustrazioni al posto delle foto in `Scenery.tsx`.
 - **Prezzi del preventivo:** `quoteTypes`, `quoteExtras`, `quoteUrgency`.
   `priceFactor` (ora `0.8`, cioè -20%) si applica a tutti i prezzi: con `1` tornano quelli pieni.
 - **Extra del preventivo:** il campo `for` di ogni extra dice per quali servizi compare
