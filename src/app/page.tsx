@@ -11,8 +11,8 @@ export default function Home() {
     <main id="contenuto">
       <Hero />
       <About />
-      <WorkCategories />
       <Makeovers />
+      <WorkCategories />
       <TechStack />
       <QuoteEstimator />
       <Contact />

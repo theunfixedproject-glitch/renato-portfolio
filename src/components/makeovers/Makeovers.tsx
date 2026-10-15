@@ -12,14 +12,14 @@ export function Makeovers() {
     <section aria-labelledby="prima-dopo-title" id="prima-dopo" className="section">
       <SectionHeading
         id="prima-dopo-title"
-        index="03"
+        index="02"
         eyebrow="prima e dopo"
         title={
           <>
             Siti da incubo, <span className="text-gradient">rimessi a nuovo.</span>
           </>
         }
-        intro="Come in quei programmi in cui un esperto rimette in piedi un ristorante, ma per siti web: prendo un sito che allontana i clienti e lo rifaccio da zero. Trascina la maniglia per vedere la differenza."
+        intro="Un sito vecchio non è innocuo: ogni giorno allontana clienti che non sapranno mai quanto è bello il tuo posto. Stesse camere, stessa vista, stessi proprietari: cambia solo il modo di presentarsi, e con lui le prenotazioni. Trascina la maniglia e guarda la differenza."
       />
 
       <MakeoverList />

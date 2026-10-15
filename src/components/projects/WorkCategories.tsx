@@ -6,25 +6,60 @@ import { categories } from "@/lib/data";
 import { categoryPreviews, categorySummary } from "@/lib/work";
 import { ArrowIcon } from "../ui/Icons";
 import { Reveal } from "../ui/Reveal";
-import { SectionHeading } from "../ui/SectionHeading";
 import { CategoryIcon } from "./CategoryIcon";
 
-/** Sezione della home: il portfolio diviso in quattro porte d'ingresso. */
+/** Sezione della home: un unico grande pulsante che apre la pagina con tutti i lavori. */
 export function WorkCategories() {
+  const shots = ["/img/projects/rivvo-home.webp", "/img/projects/distretto-centrale.webp", "/img/projects/ritmo.webp"];
   return (
     <section aria-labelledby="lavori-title" id="lavori" className="section">
-      <SectionHeading
-        id="lavori-title"
-        index="02"
-        eyebrow="lavori personali"
-        title={
-          <>
-            Scopri i miei <span className="text-gradient">lavori personali.</span>
-          </>
-        }
-        intro="App, giochi, siti e automazioni che progetto e sviluppo da zero. Scegli da dove cominciare."
-      />
-      <CategoryGrid />
+      <Reveal>
+        <Link
+          href="/lavori"
+          className="beam group relative grid overflow-hidden rounded-[2rem] border border-violet/20 bg-gradient-to-br from-violet/15 via-coal to-coal p-7 md:grid-cols-[1.3fr_1fr] md:p-12"
+        >
+          <div aria-hidden className="pointer-events-none absolute -top-32 -left-32 size-96 rounded-full bg-violet/20 blur-3xl transition-opacity duration-700 group-hover:opacity-70" />
+          <div className="relative">
+            <p className="eyebrow flex items-center gap-3">
+              <span className="text-snow">03</span>
+              <span aria-hidden className="block h-px w-12 bg-gradient-to-r from-cyber to-violet" />
+              lavori personali
+            </p>
+            <h2 id="lavori-title" className="heading mt-6">
+              Scopri i miei <span className="text-gradient">lavori personali.</span>
+            </h2>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-mist">
+              App, giochi, siti e automazioni che progetto e sviluppo da zero. Scegli da dove cominciare.
+            </p>
+            <ul className="mt-8 flex flex-wrap gap-2">
+              {categories.map((c) => (
+                <li key={c.id} className="inline-flex items-center gap-2 rounded-full border border-line bg-ink/60 px-3 py-1.5 font-mono text-xs text-mist">
+                  <CategoryIcon id={c.id} size={14} />
+                  {c.label}
+                </li>
+              ))}
+            </ul>
+            <span className="shine mt-10 inline-flex items-center gap-3 rounded-full bg-violet px-7 py-4 font-mono text-sm font-medium text-ink shadow-[0_0_40px_-8px_var(--color-violet)] transition-shadow group-hover:shadow-[0_0_60px_-4px_var(--color-violet)]">
+              Apri i lavori
+              <ArrowIcon width={16} height={16} className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+            </span>
+          </div>
+
+          <div aria-hidden className="relative mt-12 h-64 md:mt-0 md:h-auto">
+            {shots.map((src, i) => (
+              <div
+                key={src}
+                style={{ zIndex: i === 1 ? 3 : 1 }}
+                className={`absolute top-1/2 left-1/2 aspect-[9/19] w-28 -translate-y-1/2 overflow-hidden rounded-2xl border-4 border-[#1c1c24] shadow-2xl transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] md:w-36 ${
+                  ["-translate-x-[120%] -rotate-12 group-hover:-translate-x-[135%] group-hover:-rotate-[16deg]", "-translate-x-1/2 group-hover:-translate-y-[56%]", "translate-x-[20%] rotate-12 group-hover:translate-x-[35%] group-hover:rotate-[16deg]"][i]
+                }`}
+              >
+                <Image src={src} alt="" fill sizes="150px" className="object-cover object-top" />
+              </div>
+            ))}
+          </div>
+        </Link>
+      </Reveal>
     </section>
   );
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import { Fraunces } from "next/font/google";
 import { Scenery } from "./Scenery";
 
@@ -94,41 +96,79 @@ function RosaBefore() {
 
 function RosaAfter() {
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#1f1712] text-[#fbf3ea]">
+    <div className="relative h-full w-full overflow-hidden bg-[#1f1712] text-[#fbf3ea]" style={{ fontFamily: "var(--font-inter)" }}>
       <Scenery variant="vineyard" className="absolute inset-0 h-full w-full" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#1f1712]/85 via-[#1f1712]/35 to-transparent" />
-      <div className="relative flex items-center justify-between px-14 pt-9 text-[15px]">
-        <p className={`${fraunces.className} text-[30px] font-semibold`}>
-          Da Rosa <span className="text-[14px] font-normal tracking-[0.3em] text-[#f6c99a] uppercase">B&amp;B</span>
-        </p>
-        <div className="flex items-center gap-9">
+      <div className="absolute inset-0 bg-gradient-to-r from-[#1a120d]/90 via-[#1a120d]/45 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-[#1a120d]/80 to-transparent" />
+
+      <div className="relative flex items-center justify-between px-14 pt-8 text-[15px]">
+        <div className="flex items-center gap-3">
+          <span className={`${fraunces.className} grid size-12 place-items-center rounded-full border border-[#f6c99a]/60 text-[24px] text-[#f6c99a] italic`}>R</span>
+          <div className="leading-tight">
+            <p className={`${fraunces.className} text-[26px] font-semibold`}>Da Rosa</p>
+            <p className="text-[11px] tracking-[0.35em] text-[#f6c99a] uppercase">Bed &amp; Breakfast</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-8 text-[#f3e6d8]">
           {["Camere", "Colazione", "Dintorni", "Dove siamo"].map((m) => (
             <span key={m}>{m}</span>
           ))}
-          <span className="rounded-full bg-[#f6c99a] px-6 py-3 font-semibold text-[#2b1d14]">Prenota</span>
+          <span className="text-[13px] text-[#f6c99a]">IT · DE · EN</span>
+          <span className="rounded-full bg-[#f6c99a] px-6 py-3 font-semibold text-[#2b1d14] shadow-[0_10px_30px_-8px_rgba(246,201,154,0.7)]">Prenota</span>
         </div>
       </div>
-      <div className="relative mt-24 max-w-[640px] px-14">
-        <p className="text-[14px] tracking-[0.35em] text-[#f6c99a] uppercase">5 camere tra i vigneti · Trentino</p>
-        <h3 className={`${fraunces.className} mt-5 text-[72px] leading-[1.02] font-semibold`}>
-          Il silenzio dei vigneti, a un passo dalle <em className="text-[#f6c99a]">Dolomiti</em>.
+
+      <div className="relative mt-16 max-w-[640px] px-14">
+        <p className="inline-flex items-center gap-2 rounded-full border border-[#f6c99a]/40 bg-black/25 px-4 py-2 text-[13px] text-[#ffe3c2] backdrop-blur">
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#7ee08a] opacity-75" />
+            <span className="relative size-2 rounded-full bg-[#7ee08a]" />
+          </span>
+          2 camere libere questo weekend
+        </p>
+        <h3 className={`${fraunces.className} mt-6 text-[76px] leading-[0.98] font-semibold tracking-[-0.01em]`}>
+          Il silenzio dei vigneti, a un passo dalle <em className="font-normal text-[#f6c99a]">Dolomiti</em>.
         </h3>
-        <p className="mt-6 max-w-[520px] text-[19px] leading-relaxed text-[#f3e6d8]">
-          Camere luminose con bagno privato, colazione con prodotti del territorio e la Guest Card per muoverti gratis.
+        <p className="mt-6 max-w-[500px] text-[18px] leading-relaxed text-[#f3e6d8]/90">
+          Cinque camere luminose, colazione con i prodotti dei vicini e la Guest Card per muoverti gratis in tutta la valle.
         </p>
       </div>
-      <div className="absolute right-14 bottom-12 left-14 flex items-end gap-4 rounded-[28px] bg-[#fbf3ea] p-4 text-[#2b1d14] shadow-2xl">
+
+      <div className="absolute top-[190px] right-14 w-[270px] overflow-hidden rounded-[22px] bg-[#fbf3ea]/95 text-[#2b1d14] shadow-2xl">
+        <div className="relative h-[130px] overflow-hidden">
+          <Scenery variant="vineyard" className="absolute inset-0 h-full w-full scale-150" style={{ objectPosition: "right" }} />
+          <span className="absolute top-3 left-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-semibold">Vista vigneto</span>
+        </div>
+        <div className="p-4">
+          <p className={`${fraunces.className} text-[20px] font-semibold`}>Camera Teroldego</p>
+          <p className="mt-1 text-[13px] text-[#8a6a52]">Matrimoniale · balcone · bagno privato</p>
+          <div className="mt-3 flex items-end justify-between">
+            <p className="text-[13px] text-[#8a6a52]">
+              da <b className="text-[24px] text-[#2b1d14]">85 €</b> / notte
+            </p>
+            <span className="rounded-full bg-[#7a2e2e] px-3 py-1.5 text-[12px] font-semibold text-white">Vedi</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute right-14 bottom-10 left-14 flex items-stretch gap-3 rounded-[26px] border border-white/30 bg-[#fbf3ea]/92 p-3 text-[#2b1d14] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md">
         {[
-          ["Arrivo", "Ven 12 giu"],
-          ["Partenza", "Dom 14 giu"],
-          ["Ospiti", "2 adulti"],
-        ].map(([l, v]) => (
-          <div key={l} className="flex-1 rounded-2xl bg-[#f1e4d3] px-5 py-3">
-            <p className="text-[12px] tracking-wider text-[#8a6a52] uppercase">{l}</p>
-            <p className="mt-1 text-[19px] font-semibold">{v}</p>
+          ["📅", "Arrivo", "Ven 12 giugno"],
+          ["📅", "Partenza", "Dom 14 giugno"],
+          ["👥", "Ospiti", "2 adulti"],
+        ].map(([i, l, v]) => (
+          <div key={l} className="flex flex-1 items-center gap-3 rounded-2xl bg-[#f1e4d3] px-5 py-3">
+            <span className="text-[22px]">{i}</span>
+            <div>
+              <p className="text-[11px] tracking-wider text-[#8a6a52] uppercase">{l}</p>
+              <p className="mt-0.5 text-[18px] font-semibold">{v}</p>
+            </div>
           </div>
         ))}
-        <div className="rounded-2xl bg-[#7a2e2e] px-8 py-6 text-[18px] font-semibold text-white">Verifica disponibilità</div>
+        <div className="flex flex-col items-center justify-center rounded-2xl bg-[#7a2e2e] px-8 text-white">
+          <p className="text-[18px] font-semibold">Verifica disponibilità</p>
+          <p className="text-[12px] text-white/75">Prenotazione diretta, senza commissioni</p>
+        </div>
       </div>
     </div>
   );
@@ -220,46 +260,83 @@ function NosiolaBefore() {
 function NosiolaAfter() {
   return (
     <div className="flex h-full w-full overflow-hidden bg-[#f6f1e7] text-[#1f3b2d]" style={{ fontFamily: "var(--font-inter)" }}>
-      <div className="flex w-[640px] flex-col justify-between p-14">
-        <div className="flex items-center justify-between text-[15px]">
-          <p className={`${fraunces.className} text-[28px] font-semibold`}>La Nosiola</p>
-          <div className="flex gap-7 text-[#4c6a5a]">
+      <div className="flex w-[640px] flex-col justify-between p-12 pr-6">
+        <div className="flex items-center justify-between text-[14px]">
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 place-items-center rounded-full bg-[#1f3b2d] text-[#f6f1e7]">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path d="M12 3c3 3 4 6 4 9a4 4 0 0 1-8 0c0-3 1-6 4-9Z" />
+                <path d="M12 21v-7" />
+              </svg>
+            </span>
+            <p className={`${fraunces.className} text-[26px] font-semibold`}>La Nosiola</p>
+          </div>
+          <div className="flex gap-6 text-[#4c6a5a]">
             <span>Camere</span>
-            <span>Trento</span>
+            <span>Esperienze</span>
             <span>Contatti</span>
+            <span className="font-semibold text-[#1f3b2d]">IT</span>
           </div>
         </div>
+
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full bg-[#e3ebe1] px-4 py-2 text-[14px] font-medium">
-            <span className="size-2 rounded-full bg-[#2f7a4f]" /> Centro storico · 50 m dalla piazza
+          <p className="inline-flex items-center gap-2 rounded-full bg-[#e3ebe1] px-4 py-2 text-[13px] font-medium">
+            <span className="size-2 rounded-full bg-[#2f7a4f]" /> Centro storico · 50 m dalla piazza del Duomo
           </p>
-          <h3 className={`${fraunces.className} mt-6 text-[70px] leading-[1.02] font-semibold`}>
-            Dormi nel cuore di <em className="text-[#b5654b]">Trento</em>.
+          <h3 className={`${fraunces.className} mt-6 text-[74px] leading-[0.98] font-semibold tracking-[-0.01em]`}>
+            Dormi nel cuore di <em className="font-normal text-[#b5654b]">Trento</em>.
           </h3>
           <p className="mt-5 max-w-[470px] text-[18px] leading-relaxed text-[#4c6a5a]">
-            Quattro camere con bagno privato, ascensore e biciclette a disposizione. Tutto il centro a piedi.
+            Quattro camere con bagno privato, ascensore e biciclette in prestito. Musei, ristoranti e mercatini: tutto a piedi.
           </p>
           <div className="mt-8 flex gap-3 text-[16px] font-semibold">
-            <span className="rounded-full bg-[#1f3b2d] px-7 py-4 text-[#f6f1e7]">Prenota direttamente</span>
-            <span className="rounded-full border-2 border-[#1f3b2d] px-7 py-4">Scrivici su WhatsApp</span>
+            <span className="rounded-full bg-[#1f3b2d] px-7 py-4 text-[#f6f1e7] shadow-[0_14px_30px_-12px_rgba(31,59,45,0.7)]">Prenota direttamente</span>
+            <span className="rounded-full border-2 border-[#1f3b2d]/80 px-7 py-4">Scrivici su WhatsApp</span>
           </div>
         </div>
-        <div className="flex gap-8 text-[14px] text-[#4c6a5a]">
-          <span>✓ Senza commissioni</span>
-          <span>✓ Check-in autonomo</span>
-          <span>✓ Wi-Fi veloce</span>
+
+        <div className="grid grid-cols-3 gap-3 text-[13px]">
+          {[
+            ["Senza commissioni", "prenoti con noi"],
+            ["Check-in autonomo", "arrivi quando vuoi"],
+            ["Bici incluse", "per girare la città"],
+          ].map(([t, d]) => (
+            <div key={t} className="rounded-2xl border border-[#1f3b2d]/10 bg-white/60 px-4 py-3">
+              <p className="font-semibold">{t}</p>
+              <p className="text-[#8a9a8f]">{d}</p>
+            </div>
+          ))}
         </div>
       </div>
-      <div className="relative flex-1 p-8 pl-0">
-        <div className="relative h-full overflow-hidden rounded-t-[320px] rounded-b-[40px]">
+
+      <div className="relative flex-1 py-8 pr-8">
+        <div className="relative h-full overflow-hidden rounded-t-[320px] rounded-b-[40px] shadow-[0_40px_80px_-30px_rgba(31,59,45,0.6)]">
           <Scenery variant="city" className="absolute inset-0 h-full w-full" />
         </div>
-        <div className="absolute bottom-16 -left-10 w-[290px] rounded-3xl bg-white p-5 shadow-xl">
-          <p className="text-[12px] tracking-wider text-[#8a9a8f] uppercase">Camera Duomo</p>
+        <div className="absolute top-36 right-14 w-[220px] rounded-2xl bg-white p-3 shadow-xl">
+          <svg viewBox="0 0 200 110" className="h-[100px] w-full rounded-xl bg-[#eef1e8]">
+            <path d="M0 70 H200 M60 0 V110 M140 0 V110 M0 25 L200 95" stroke="#fff" strokeWidth="8" />
+            <path d="M0 70 H200 M60 0 V110 M140 0 V110 M0 25 L200 95" stroke="#dfe4d7" strokeWidth="1" />
+            <rect x="80" y="30" width="44" height="28" rx="4" fill="#d8c3a0" />
+            <circle cx="102" cy="44" r="5" fill="#b5654b" />
+            <path d="M150 52 c0-9 14-9 14 0 c0 7-7 13-7 13 s-7-6-7-13Z" fill="#2f7a4f" />
+            <path d="M157 52 L118 46" stroke="#2f7a4f" strokeWidth="2" strokeDasharray="3 3" />
+          </svg>
+          <p className="mt-2 px-1 text-[13px] font-semibold">Duomo a 50 metri</p>
+          <p className="px-1 text-[12px] text-[#8a9a8f]">1 minuto a piedi</p>
+        </div>
+        <div className="absolute bottom-16 -left-10 w-[300px] rounded-3xl bg-white p-5 shadow-2xl">
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] tracking-wider text-[#8a9a8f] uppercase">Camera Duomo</p>
+            <p className="text-[12px] font-semibold text-[#2f7a4f]">Libera stasera</p>
+          </div>
           <p className={`${fraunces.className} mt-1 text-[24px] font-semibold`}>Doppia con balcone</p>
-          <p className="mt-2 text-[15px] text-[#4c6a5a]">
-            da <b className="text-[22px] text-[#1f3b2d]">78 €</b> / notte
-          </p>
+          <div className="mt-3 flex items-end justify-between">
+            <p className="text-[14px] text-[#4c6a5a]">
+              da <b className="text-[24px] text-[#1f3b2d]">78 €</b> / notte
+            </p>
+            <span className="rounded-full bg-[#b5654b] px-4 py-2 text-[13px] font-semibold text-white">Prenota</span>
+          </div>
         </div>
       </div>
     </div>
@@ -311,40 +388,86 @@ function ArcadiaBefore() {
 }
 
 function ArcadiaAfter() {
+  const days = Array.from({ length: 14 }, (_, i) => i + 8);
   return (
-    <div className="h-full w-full overflow-hidden bg-[#f4f6ee] p-6 text-[#23331f]" style={{ fontFamily: "var(--font-inter)" }}>
-      <div className="relative h-full overflow-hidden rounded-[36px]">
+    <div className="grid h-full w-full grid-cols-[1.55fr_1fr] gap-4 overflow-hidden bg-[#eef2e6] p-5 text-[#23331f]" style={{ fontFamily: "var(--font-inter)" }}>
+      <div className="relative overflow-hidden rounded-[32px]">
         <Scenery variant="garden" className="absolute inset-0 h-full w-full" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1d2a19]/80 via-[#1d2a19]/10 to-transparent" />
-        <div className="relative m-6 flex items-center justify-between rounded-full bg-white/85 px-7 py-3.5 text-[15px] backdrop-blur">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#16220f]/85 via-[#16220f]/10 to-transparent" />
+        <div className="relative m-5 flex items-center justify-between rounded-full bg-white/80 px-6 py-3 text-[14px] backdrop-blur">
           <p className="text-[22px] font-bold tracking-tight">
             arcadia<span className="text-[#5f8f4e]">.</span>
           </p>
-          <div className="flex items-center gap-8 text-[#4a5a45]">
+          <div className="flex gap-6 text-[#4a5a45]">
             <span>Il giardino</span>
             <span>Camere</span>
             <span>Colazione</span>
-            <span className="rounded-full bg-[#5f8f4e] px-5 py-2.5 font-semibold text-white">Verifica le date</span>
           </div>
         </div>
-        <div className="absolute right-12 bottom-12 left-12 flex items-end justify-between text-white">
-          <div className="max-w-[640px]">
-            <p className="w-fit rounded-full bg-white/20 px-4 py-1.5 text-[14px] backdrop-blur">🌿 B&amp;B con giardino privato · in città</p>
-            <h3 className="mt-5 text-[76px] leading-[0.98] font-bold tracking-tight">Un giardino segreto, a due passi da tutto.</h3>
+        <div className="absolute right-8 bottom-8 left-8 text-white">
+          <p className="w-fit rounded-full bg-white/20 px-4 py-1.5 text-[13px] backdrop-blur">🌿 B&amp;B con giardino privato, in città</p>
+          <h3 className="mt-4 text-[68px] leading-[0.95] font-bold tracking-[-0.03em]">Un giardino segreto, a due passi da tutto.</h3>
+          <div className="mt-6 flex gap-3 text-[15px] font-semibold">
+            <span className="rounded-full bg-white px-6 py-3.5 text-[#23331f]">Scopri le camere</span>
+            <span className="rounded-full bg-[#25d366] px-6 py-3.5 text-[#0b3d1e]">Scrivici su WhatsApp</span>
           </div>
-          <div className="w-[300px] space-y-3">
-            {[
-              ["☕", "Colazione in terrazza"],
-              ["🚲", "Deposito bici coperto"],
-              ["📶", "Wi-Fi in tutta la casa"],
-            ].map(([i, t]) => (
-              <div key={t} className="flex items-center gap-3 rounded-2xl bg-white/90 px-4 py-3 text-[16px] font-medium text-[#23331f]">
-                <span className="text-[20px]">{i}</span>
-                {t}
-              </div>
+        </div>
+      </div>
+
+      <div className="grid grid-rows-[auto_1fr_auto] gap-4">
+        <div className="rounded-[28px] bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <p className="text-[15px] font-semibold">Giugno</p>
+            <p className="text-[12px] text-[#7a8a74]">Seleziona le date</p>
+          </div>
+          <div className="mt-3 grid grid-cols-7 gap-1.5 text-center text-[13px]">
+            {["L", "M", "M", "G", "V", "S", "D"].map((d, i) => (
+              <span key={i} className="text-[11px] text-[#9aa894]">
+                {d}
+              </span>
             ))}
-            <div className="rounded-2xl bg-[#25d366] px-4 py-3.5 text-center text-[16px] font-semibold text-[#0b3d1e]">Scrivici su WhatsApp</div>
+            {days.map((d) => {
+              const inRange = d >= 12 && d <= 14;
+              const edge = d === 12 || d === 14;
+              const full = d === 9 || d === 17 || d === 18;
+              return (
+                <span
+                  key={d}
+                  className={`rounded-lg py-1.5 ${edge ? "bg-[#5f8f4e] font-semibold text-white" : inRange ? "bg-[#dfead4]" : full ? "text-[#c3cbbf] line-through" : ""}`}
+                >
+                  {d}
+                </span>
+              );
+            })}
           </div>
+          <div className="mt-4 flex items-center justify-between rounded-2xl bg-[#f3f6ee] px-4 py-3">
+            <p className="text-[13px] text-[#4a5a45]">
+              2 notti · <b className="text-[#23331f]">176 €</b>
+            </p>
+            <span className="rounded-full bg-[#5f8f4e] px-4 py-2 text-[13px] font-semibold text-white">Prenota</span>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-[28px]">
+          <Scenery variant="garden" className="absolute inset-0 h-full w-full scale-[1.8]" style={{ transformOrigin: "35% 75%" }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute bottom-4 left-4 text-white">
+            <p className="text-[12px] tracking-wider uppercase opacity-80">Dalle 7:30 alle 10:30</p>
+            <p className="text-[22px] font-bold">Colazione sotto il glicine</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 text-center text-[12px] font-medium">
+          {[
+            ["☕", "Torte fatte in casa"],
+            ["🚲", "Bici al coperto"],
+            ["📶", "Wi-Fi veloce"],
+          ].map(([i, t]) => (
+            <div key={t} className="rounded-2xl bg-white px-2 py-3 shadow-sm">
+              <p className="text-[20px]">{i}</p>
+              <p className="mt-1">{t}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

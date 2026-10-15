@@ -1,6 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useSpring } from "framer-motion";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { navLinks, profile } from "@/lib/data";
 
@@ -33,6 +35,9 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const active = useActiveSection();
+  const pathname = usePathname();
+  // Fuori dalla home: un "Indietro" sempre visibile che porta alla pagina superiore.
+  const back = pathname === "/" ? null : pathname.startsWith("/lavori/") ? "/lavori" : "/";
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
 
@@ -95,8 +100,21 @@ export function Navbar() {
             <span className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-violet to-violet-soft font-mono text-sm text-ink shadow-[0_0_20px_-4px_var(--color-violet)] transition-transform duration-500 group-hover:rotate-[360deg]">
               RM
             </span>
-            <span className="hidden sm:inline">{profile.name}</span>
+            <span className={back ? "hidden lg:inline" : "hidden sm:inline"}>{profile.name}</span>
           </a>
+          {back && (
+            <Link
+              href={back}
+              className="ml-2 inline-flex min-h-10 items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] py-1.5 pr-4 pl-1.5 text-sm font-semibold text-snow transition-colors hover:border-cyber md:mr-auto md:ml-4"
+            >
+              <span className="grid size-7 place-items-center rounded-full bg-snow text-ink">
+                <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M19 12H5M11 18l-6-6 6-6" />
+                </svg>
+              </span>
+              Indietro
+            </Link>
+          )}
 
           <ul className="hidden items-center md:flex">
             {navLinks.map((link) => {

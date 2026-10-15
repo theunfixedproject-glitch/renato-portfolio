@@ -22,8 +22,8 @@ export const profile = {
 /** Voci del menu: puntano alle sezioni della home, quindi funzionano anche dalle altre pagine. */
 export const navLinks = [
   { id: "chi-sono", label: "Chi sono" },
-  { id: "lavori", label: "Lavori" },
   { id: "prima-dopo", label: "Prima e dopo" },
+  { id: "lavori", label: "Lavori" },
   { id: "preventivo", label: "Preventivo" },
   { id: "contatti", label: "Contatti" },
 ] as const;
@@ -303,7 +303,7 @@ export const quoteExtras: QuoteExtra[] = [
 ];
 
 export const quoteUrgency = [
-  { id: "relaxed", label: "Con calma", multiplier: 1, weekFactor: 1.2 },
+  { id: "relaxed", label: "Con calma", multiplier: 0.9, weekFactor: 1.3 },
   { id: "normal", label: "Normale", multiplier: 1, weekFactor: 1 },
   { id: "rush", label: "Urgente", multiplier: 1.25, weekFactor: 0.7 },
 ] as const;
@@ -327,7 +327,7 @@ export const makeovers: Makeover[] = [
     id: "rosa",
     name: "B&B Da Rosa",
     place: "Paesino tra i vigneti",
-    url: "bbdarosa.it",
+    url: "darosatraivigneti.it",
     verdict: "Un posto bellissimo, raccontato da un sito fermo al 2014.",
     fixes: [
       { before: "Foto minuscola e sgranata", after: "Paesaggio a tutto schermo: si vende da solo" },
@@ -339,7 +339,7 @@ export const makeovers: Makeover[] = [
     id: "nosiola",
     name: "B&B La Nosiola",
     place: "Centro storico",
-    url: "lanosiola.it/index.php/it",
+    url: "lanosiola.it",
     verdict: "La posizione è il punto forte, ma era sepolta sotto moduli e banner.",
     fixes: [
       { before: "Banner cookie che copre metà pagina", after: "Consenso discreto, a norma e fuori dai piedi" },
@@ -351,7 +351,7 @@ export const makeovers: Makeover[] = [
     id: "arcadia",
     name: "B&B Arcadia",
     place: "Giardino in città",
-    url: "bb-arcadia.it",
+    url: "arcadiagiardinosegreto.it",
     verdict: "Scritte che scorrono, verde su nero e un video che non si apre più.",
     fixes: [
       { before: "Contenuto in Flash: oggi non si apre su nessun dispositivo", after: "Immagini e testi che funzionano ovunque, telefono compreso" },

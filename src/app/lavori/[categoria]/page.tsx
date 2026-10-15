@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MakeoverCta, MakeoverList } from "@/components/makeovers/Makeovers";
 import { CategoryIcon } from "@/components/projects/CategoryIcon";
+import { CategorySwitcher } from "@/components/projects/CategorySwitcher";
+import { BackButton } from "@/components/ui/BackButton";
 import { ProjectShowcase } from "@/components/projects/ProjectShowcase";
 import { categories, profile, projects } from "@/lib/data";
 import { categorySummary, getCategory } from "@/lib/work";
@@ -26,28 +28,10 @@ export default async function CategoriaPage({ params }: { params: Promise<{ cate
   const summary = categorySummary(cat.id);
 
   return (
-    <main id="contenuto" className="section pt-32 md:pt-40">
-      <nav aria-label="Percorso" className="font-mono text-xs text-mist">
-        <ol className="flex flex-wrap items-center gap-2">
-          <li>
-            <Link href="/" className="hover:text-snow">
-              Home
-            </Link>
-          </li>
-          <li aria-hidden>/</li>
-          <li>
-            <Link href="/#lavori" className="hover:text-snow">
-              Lavori
-            </Link>
-          </li>
-          <li aria-hidden>/</li>
-          <li aria-current="page" className="text-cyber">
-            {cat.label}
-          </li>
-        </ol>
-      </nav>
+    <main id="contenuto" className="section pt-28 md:pt-36">
+      <BackButton href="/lavori" label="Tutti i lavori" />
 
-      <div className="mt-8 flex flex-wrap items-end justify-between gap-6">
+      <div className="mt-10 flex flex-wrap items-end justify-between gap-6">
         <div className="max-w-3xl">
           <h1 className="heading flex items-center gap-4">
             <span className="grid size-14 shrink-0 place-items-center rounded-2xl border border-violet/30 bg-violet/10 text-violet-soft md:size-16">
@@ -60,27 +44,7 @@ export default async function CategoriaPage({ params }: { params: Promise<{ cate
         <p className="rounded-full border border-line px-4 py-2 font-mono text-xs text-mist">{summary.label}</p>
       </div>
 
-      <nav aria-label="Categorie" className="-mx-5 mt-10 overflow-x-auto px-5 sm:mx-0 sm:px-0">
-        <ul className="flex w-max gap-2">
-          {categories.map((c) => {
-            const active = c.id === cat.id;
-            return (
-              <li key={c.id}>
-                <Link
-                  href={`/lavori/${c.id}`}
-                  aria-current={active ? "page" : undefined}
-                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 font-mono text-xs transition-colors ${
-                    active ? "border-cyber bg-cyber text-ink" : "border-line text-mist hover:border-violet hover:text-snow"
-                  }`}
-                >
-                  <CategoryIcon id={c.id} size={16} />
-                  {c.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+      <CategorySwitcher current={cat.id} />
 
       <div className="mt-20 space-y-28 md:space-y-36">
         {cat.id === "siti-web" ? (
@@ -112,6 +76,14 @@ export default async function CategoriaPage({ params }: { params: Promise<{ cate
             </div>
           </div>
         )}
+      </div>
+
+      <div className="mt-24 flex flex-col items-center gap-6 border-t border-line pt-14 text-center">
+        <p className="font-display text-2xl font-bold">Hai visto tutto in questa categoria.</p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <BackButton href="/lavori" label="Torna a tutti i lavori" />
+          <BackButton href="/" label="Torna alla home" />
+        </div>
       </div>
     </main>
   );
