@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useScroll, useSpring } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { navLinks, profile } from "@/lib/data";
 
 /** Sezione attualmente sullo schermo, per evidenziare la voce giusta del menu. */
@@ -51,6 +51,22 @@ export function Navbar() {
   }, [open]);
 
   const floating = scrolled || open;
+
+  // L'animazione di chiusura del menu mobile annulla lo scroll del browser:
+  // ci si ricorda la destinazione e si scorre quando il menu è sparito del tutto.
+  const pendingHref = useRef<string | null>(null);
+  const goTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    pendingHref.current = href;
+    setOpen(false);
+  };
+  const scrollToPending = () => {
+    const href = pendingHref.current;
+    pendingHref.current = null;
+    if (!href) return;
+    document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    history.replaceState(null, "", href);
+  };
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5">
@@ -125,7 +141,7 @@ export function Navbar() {
           </div>
         </nav>
 
-        <AnimatePresence>
+        <AnimatePresence onExitComplete={scrollToPending}>
           {open && (
             <motion.ul
               id="menu-mobile"
@@ -143,7 +159,7 @@ export function Navbar() {
                 >
                   <a
                     href={link.href}
-                    onClick={() => setOpen(false)}
+                    onClick={(e) => goTo(e, link.href)}
                     className="flex items-baseline gap-3 border-b border-line/60 py-4 font-display text-2xl font-bold"
                   >
                     <span className="font-mono text-xs text-cyber">{String(i + 1).padStart(2, "0")}</span>

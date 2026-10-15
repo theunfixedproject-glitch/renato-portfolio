@@ -120,7 +120,7 @@ export function QuoteEstimator() {
           <fieldset className="min-w-0">
             <legend className="eyebrow mb-2">{step++} · Extra</legend>
             <p className="mb-4 text-sm text-mist">
-              {input.typeIds.length ? "Solo quelli che hanno senso per ciò che hai scelto." : "Scegli prima un servizio."}
+              {input.typeIds.length ? "Aggiungi le funzioni che vorresti: ne parliamo comunque insieme prima di iniziare." : "Scegli prima un servizio."}
             </p>
             <motion.div layout className="flex min-w-0 flex-wrap gap-2">
               <AnimatePresence initial={false} mode="popLayout">

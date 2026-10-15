@@ -241,7 +241,7 @@ export const quoteExtras: QuoteExtra[] = [
   {
     id: "quote",
     label: "Preventivatore online",
-    hint: "Come quello che stai usando adesso: i tuoi clienti si calcolano il prezzo da soli e ti arrivano già convinti.",
+    hint: "Come quello che stai usando adesso: i tuoi clienti vedono subito costi e tempi, e ti contattano con le idee già chiare.",
     price: [350, 800],
     weeks: 1,
     for: "all",

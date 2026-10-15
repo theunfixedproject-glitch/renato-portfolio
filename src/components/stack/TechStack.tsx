@@ -40,7 +40,7 @@ export function TechStack() {
               Performance, accessibilità e SEO sono il punto di partenza, non un extra da pagare a parte.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 md:gap-10">
             {lighthouse.map((m, i) => (
               <LighthouseGauge key={m.label} label={m.label} value={m.value} delay={i * 0.15} />
             ))}
