@@ -5,6 +5,7 @@ import { FloatingWhatsApp } from "@/components/layout/FloatingWhatsApp";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Providers } from "@/components/Providers";
+import { BackgroundScene } from "@/components/scene/BackgroundScene";
 import { profile } from "@/lib/data";
 import "./globals.css";
 
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="grain">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <Providers>
+          <BackgroundScene />
           <Ambient />
           <Navbar />
           {children}

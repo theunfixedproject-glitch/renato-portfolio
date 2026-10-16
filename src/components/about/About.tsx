@@ -3,7 +3,9 @@
 import { motion } from "framer-motion";
 import { profile, services } from "@/lib/data";
 import { Reveal } from "../ui/Reveal";
+import { Tilt } from "../ui/Tilt";
 import { SectionHeading } from "../ui/SectionHeading";
+import { BeamBorder } from "../ui/BeamBorder";
 
 const serviceIcons: Record<string, React.ReactNode> = {
   web: (
@@ -57,12 +59,14 @@ export function About() {
       <div className="grid gap-5 md:grid-cols-3">
         {services.map((service, i) => (
           <Reveal key={service.id} delay={i * 0.1}>
+            <Tilt className="h-full rounded-3xl">
             <motion.article
               whileHover={{ y: -6 }}
               transition={{ type: "spring", stiffness: 300, damping: 22 }}
-              className="card beam-hover group relative h-full overflow-hidden p-7"
+              className="card group relative h-full overflow-hidden p-7"
             >
-              <div className="pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-violet/0 blur-3xl transition-colors duration-500 group-hover:bg-violet/30" />
+              <BeamBorder onHover />
+              <div className="glow-violet pointer-events-none absolute -top-32 -right-32 size-80 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               <span
                 aria-hidden
                 className="text-outline pointer-events-none absolute -right-2 -bottom-6 font-display text-[9rem] leading-none font-extrabold opacity-40 transition-opacity duration-500 group-hover:opacity-80"
@@ -90,6 +94,7 @@ export function About() {
                 ))}
               </ul>
             </motion.article>
+            </Tilt>
           </Reveal>
         ))}
       </div>

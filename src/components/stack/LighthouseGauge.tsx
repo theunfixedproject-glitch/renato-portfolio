@@ -10,7 +10,7 @@ export function LighthouseGauge({ label, value, delay = 0 }: { label: string; va
     <figure className="flex flex-col items-center gap-4">
       <div className="relative aspect-square w-full max-w-36">
         {/* Alone dietro al cerchio: sta fuori dall'SVG, così non viene tagliato ai bordi. */}
-        <div aria-hidden className="absolute inset-[12%] rounded-full bg-cyber/15 blur-xl" />
+        <div aria-hidden className="glow-green absolute -inset-[10%]" />
         <svg viewBox="0 0 120 120" overflow="visible" className="relative size-full -rotate-90 overflow-visible" aria-hidden>
           <circle cx="60" cy="60" r={R} fill="none" stroke="var(--color-line)" strokeWidth="5" />
           <motion.circle

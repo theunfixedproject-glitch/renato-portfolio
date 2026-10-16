@@ -6,7 +6,9 @@ import { categories } from "@/lib/data";
 import { categoryPreviews, categorySummary } from "@/lib/work";
 import { ArrowIcon } from "../ui/Icons";
 import { Reveal } from "../ui/Reveal";
+import { Tilt } from "../ui/Tilt";
 import { CategoryIcon } from "./CategoryIcon";
+import { BeamBorder } from "../ui/BeamBorder";
 
 /** Sezione della home: un unico grande pulsante che apre la pagina con tutti i lavori. */
 export function WorkCategories() {
@@ -14,11 +16,13 @@ export function WorkCategories() {
   return (
     <section aria-labelledby="lavori-title" id="lavori" className="section">
       <Reveal>
+        <Tilt max={3} className="rounded-[2rem]">
         <Link
           href="/lavori"
-          className="beam group relative grid overflow-hidden rounded-[2rem] border border-violet/20 bg-gradient-to-br from-violet/15 via-coal to-coal p-7 md:grid-cols-[1.3fr_1fr] md:p-12"
+          className="group relative grid overflow-hidden rounded-[2rem] border border-violet/20 bg-gradient-to-br from-violet/15 via-coal to-coal p-7 md:grid-cols-[1.3fr_1fr] md:p-12"
         >
-          <div aria-hidden className="pointer-events-none absolute -top-32 -left-32 size-96 rounded-full bg-violet/20 blur-3xl transition-opacity duration-700 group-hover:opacity-70" />
+          <BeamBorder />
+          <div aria-hidden className="glow-violet pointer-events-none absolute -top-48 -left-48 size-[36rem]" />
           <div className="relative">
             <p className="eyebrow flex items-center gap-3">
               <span className="text-snow">03</span>
@@ -59,6 +63,7 @@ export function WorkCategories() {
             ))}
           </div>
         </Link>
+        </Tilt>
       </Reveal>
     </section>
   );
@@ -74,18 +79,20 @@ export function CategoryGrid({ current }: { current?: string }) {
         const green = cat.accent === "green";
         return (
           <Reveal key={cat.id} delay={i * 0.06}>
+            <Tilt className="h-full rounded-3xl">
             <Link
               href={`/lavori/${cat.id}`}
               aria-current={isCurrent ? "page" : undefined}
-              className={`beam-hover group relative flex h-full min-h-[200px] flex-col justify-between overflow-hidden rounded-3xl border p-6 transition-colors md:min-h-[260px] md:p-8 ${
+              className={`group relative flex h-full min-h-[200px] flex-col justify-between overflow-hidden rounded-3xl border p-6 transition-colors md:min-h-[260px] md:p-8 ${
                 isCurrent ? "border-cyber/60 bg-cyber/[0.06]" : "border-line bg-coal/80 hover:bg-coal"
               }`}
             >
+              <BeamBorder onHover />
               <div
                 aria-hidden
-                className={`pointer-events-none absolute -top-24 -right-24 size-64 rounded-full blur-3xl transition-opacity duration-500 ${
-                  green ? "bg-cyber/15" : "bg-violet/20"
-                } opacity-40 group-hover:opacity-100`}
+                className={`pointer-events-none absolute -top-32 -right-32 size-96 transition-opacity duration-500 ${
+                  green ? "glow-green" : "glow-violet"
+                } opacity-50 group-hover:opacity-100`}
               />
 
               {previews.length > 0 && (
@@ -125,6 +132,7 @@ export function CategoryGrid({ current }: { current?: string }) {
                 </p>
               </div>
             </Link>
+            </Tilt>
           </Reveal>
         );
       })}

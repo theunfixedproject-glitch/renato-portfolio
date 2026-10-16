@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="relative overflow-hidden border-t border-line" data-hide-floating-wa>
       <div aria-hidden className="bg-dots absolute inset-0 [mask-image:radial-gradient(ellipse_at_bottom,#000,transparent_70%)]" />
-      <div aria-hidden className="absolute -bottom-40 left-1/2 h-80 w-[80%] -translate-x-1/2 rounded-full bg-violet/20 blur-[100px]" />
+      <div aria-hidden className="glow-violet absolute -bottom-60 left-1/2 h-[30rem] w-full -translate-x-1/2" />
 
       <div className="relative mx-auto max-w-7xl px-5 pt-24 pb-10 sm:px-8">
         <p className="eyebrow">il prossimo passo</p>

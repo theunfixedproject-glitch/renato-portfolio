@@ -5,6 +5,7 @@ import { cloneElement, useEffect, useId, useRef, useState } from "react";
 import { profile, quoteTypes } from "@/lib/data";
 import { MULTI_SERVICE_LABEL, PREFILL_EVENT, type PrefillDetail } from "@/lib/events";
 import { ArrowIcon } from "../ui/Icons";
+import { BeamBorder } from "../ui/BeamBorder";
 
 type Status = "idle" | "sending" | "sent" | "mailto" | "error";
 type Fields = { name: string; email: string; phone: string; type: string; message: string; website: string };
@@ -102,9 +103,10 @@ export function ContactForm() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, boxShadow: flash ? "0 0 0 2px var(--color-cyber)" : "0 0 0 0px transparent" }}
             exit={{ opacity: 0, scale: 0.97 }}
-            className="card beam-hover space-y-6 p-6 md:p-8"
+            className="card relative space-y-6 p-6 md:p-8"
             aria-describedby={`${id}-required`}
           >
+            <BeamBorder onHover />
             <p id={`${id}-required`} className="font-mono text-xs text-mist">
               I campi con * sono obbligatori.
             </p>

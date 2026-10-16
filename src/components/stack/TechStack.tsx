@@ -3,6 +3,7 @@ import { Reveal } from "../ui/Reveal";
 import { SectionHeading } from "../ui/SectionHeading";
 import { LighthouseGauge } from "./LighthouseGauge";
 import { TechMarquee } from "./TechMarquee";
+import { BeamBorder } from "../ui/BeamBorder";
 
 const half = Math.ceil(techStack.length / 2);
 
@@ -30,7 +31,8 @@ export function TechStack() {
       </div>
 
       <div className="mx-auto mt-20 max-w-7xl px-5 sm:px-8">
-        <Reveal className="card beam p-8 md:p-12">
+        <Reveal className="card relative p-8 md:p-12">
+          <BeamBorder />
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow">google lighthouse</p>

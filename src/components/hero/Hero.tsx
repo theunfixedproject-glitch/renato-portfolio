@@ -1,14 +1,12 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRef } from "react";
 import { profile } from "@/lib/data";
 import { ArrowIcon, WhatsAppIcon } from "../ui/Icons";
 import { MagneticButton } from "../ui/MagneticButton";
-
-const ParticleField = dynamic(() => import("./ParticleField"), { ssr: false });
+import { BeamBorder } from "../ui/BeamBorder";
 
 const headline = ["Siti,", "app", "e", "bot", "che", "lavorano", "per", "te."];
 const highlight = new Set(["lavorano"]);
@@ -25,12 +23,6 @@ export function Hero() {
 
   return (
     <section ref={section} id="top" aria-labelledby="hero-title" className="relative isolate min-h-svh overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <ParticleField eventSource={section} />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,transparent_20%,var(--color-ink)_75%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink" />
-      </div>
-
       <div className="mx-auto grid min-h-svh max-w-7xl items-center gap-12 px-5 pt-28 pb-16 sm:px-8 lg:grid-cols-[1.25fr_1fr] lg:gap-8">
         {/* Sfuma solo il testo: la foto, che su mobile arriva dopo, resta sempre ben visibile. */}
         <motion.div style={{ opacity: fade }}>
@@ -111,8 +103,9 @@ export function Hero() {
           transition={{ delay: 0.4, duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="relative mx-auto w-full max-w-md lg:max-w-none"
         >
-          <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-gradient-to-br from-violet/40 via-transparent to-cyber/30 blur-3xl" />
-          <div className="beam group relative overflow-hidden rounded-[2rem] border border-line bg-coal p-2">
+          <div className="glow-violet absolute -inset-16 -z-10" />
+          <div className="group relative overflow-hidden rounded-[2rem] border border-line bg-coal p-2">
+            <BeamBorder />
             <div className="relative aspect-[4/5] overflow-hidden rounded-[1.6rem]">
               <motion.div style={{ opacity: photoFade }} className="absolute inset-0">
                 <Image

@@ -16,7 +16,17 @@ const viewport = { once: true, margin: "-80px" } as const;
 
 export function SectionHeading({ id, index, eyebrow, title, intro }: SectionHeadingProps) {
   return (
-    <div className="mb-14 max-w-3xl md:mb-20">
+    <div className="relative mb-14 max-w-3xl md:mb-20">
+      <motion.span
+        aria-hidden
+        className="text-outline-glow pointer-events-none absolute -top-14 right-0 -z-10 font-display text-[9rem] leading-none font-extrabold select-none md:-top-20 md:-right-40 md:text-[15rem]"
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={viewport}
+        transition={{ duration: 1.2, ease }}
+      >
+        {index}
+      </motion.span>
       <motion.p
         className="eyebrow mb-6 flex items-center gap-3"
         initial="hidden"

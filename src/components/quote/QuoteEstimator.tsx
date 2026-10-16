@@ -8,6 +8,7 @@ import { availableExtras, estimateQuote, formatEuro, quoteSummary, sizeFor, type
 import { AnimatedNumber } from "../ui/AnimatedNumber";
 import { ArrowIcon, CheckIcon, WhatsAppIcon } from "../ui/Icons";
 import { SectionHeading } from "../ui/SectionHeading";
+import { BeamBorder } from "../ui/BeamBorder";
 
 const roundTens = (n: number) => formatEuro(Math.round(n / 10) * 10);
 
@@ -178,8 +179,9 @@ export function QuoteEstimator() {
         </div>
 
         <aside aria-label="La tua stima" className="lg:sticky lg:top-24 lg:self-start">
-          <div className="beam relative overflow-hidden rounded-3xl border border-violet/20 bg-gradient-to-br from-violet/20 via-coal to-coal p-6 md:p-8">
-            <div className="pointer-events-none absolute -top-20 -right-20 size-56 rounded-full bg-cyber/20 blur-3xl" />
+          <div className="relative overflow-hidden rounded-3xl border border-violet/20 bg-gradient-to-br from-violet/20 via-coal to-coal p-6 md:p-8">
+            <BeamBorder />
+            <div className="glow-green pointer-events-none absolute -top-32 -right-32 size-80" />
             <p className="eyebrow">la tua stima</p>
             <p className="sr-only" aria-live="polite">
               {result
@@ -258,10 +260,11 @@ function ExtraChip({ extra, on, onToggle }: { extra: QuoteExtra; on: boolean; on
         type="button"
         onClick={onToggle}
         aria-pressed={on}
-        className={`beam relative w-full max-w-full overflow-hidden rounded-2xl border p-4 text-left transition-colors ${
+        className={`relative w-full max-w-full overflow-hidden rounded-2xl border p-4 text-left transition-colors ${
           on ? "border-cyber bg-cyber/10" : "border-violet/60 bg-violet/10 hover:border-violet"
         }`}
       >
+        <BeamBorder />
         <span className="mb-2 inline-block rounded-full bg-violet px-2.5 py-1 font-mono text-[10px] tracking-wider text-ink uppercase">
           Consigliato
         </span>

@@ -25,15 +25,8 @@
   }
 }
 
-/* Angolo animabile per il bordo luminoso che gira attorno alle card. */
-@property --beam-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
-@keyframes beam-spin {
-  to { --beam-angle: 360deg; }
+@keyframes beam-rotate {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes shimmer {
@@ -120,42 +113,64 @@
     animation: shimmer 8s linear infinite;
   }
 
-  /* Bordo luminoso che gira attorno al riquadro. "beam-hover" lo accende solo al passaggio. */
-  .beam,
-  .beam-hover {
-    position: relative;
-  }
-
-  .beam::before,
-  .beam-hover::before {
-    content: "";
+  /*
+   * Bordo luminoso che gira attorno al riquadro (<BeamBorder />).
+   * L'anello è mascherato una volta sola; dentro ruota un gradiente con transform,
+   * che il telefono anima sulla GPU senza ridisegnare la card a ogni fotogramma.
+   */
+  .beam-ring {
     position: absolute;
     inset: 0;
     z-index: 1;
     padding: 1.5px;
     border-radius: inherit;
-    background: conic-gradient(
-      from var(--beam-angle),
-      transparent 0 65%,
-      var(--color-violet) 78%,
-      var(--color-cyber) 90%,
-      transparent 100%
-    );
+    overflow: hidden;
+    pointer-events: none;
+    container-type: size;
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-    animation: beam-spin 5s linear infinite;
-    pointer-events: none;
   }
 
-  .beam-hover::before {
+  .beam-spin {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* quadrato grande quanto la diagonale della card: copre sempre il bordo mentre ruota */
+    width: max(142cqw, 142cqh);
+    height: max(142cqw, 142cqh);
+    translate: -50% -50%;
+    background: conic-gradient(from 0deg, transparent 0 70%, var(--color-violet) 82%, var(--color-cyber) 92%, transparent 100%);
+    animation: beam-rotate 6s linear infinite;
+    will-change: transform;
+  }
+
+  .beam-ring[data-hover] {
     opacity: 0;
     transition: opacity 0.5s;
   }
 
-  .beam-hover:hover::before,
-  .beam-hover:focus-within::before {
+  .beam-ring[data-hover] .beam-spin {
+    animation-play-state: paused;
+  }
+
+  :hover > .beam-ring[data-hover],
+  :focus-within > .beam-ring[data-hover] {
     opacity: 1;
+  }
+
+  :hover > .beam-ring[data-hover] .beam-spin,
+  :focus-within > .beam-ring[data-hover] .beam-spin {
+    animation-play-state: running;
+  }
+
+  /* Aloni colorati senza filtro blur: un gradiente costa molto meno da disegnare. */
+  .glow-violet {
+    background: radial-gradient(closest-side, rgba(162, 89, 255, 0.35), transparent);
+  }
+
+  .glow-green {
+    background: radial-gradient(closest-side, rgba(61, 255, 154, 0.25), transparent);
   }
 
   /* Riflesso che attraversa il pulsante al passaggio del mouse. */
@@ -186,6 +201,12 @@
   .text-outline {
     color: transparent;
     -webkit-text-stroke: 1px var(--color-line);
+  }
+
+  .text-outline-glow {
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(162, 89, 255, 0.35);
+    text-shadow: 0 0 40px rgba(162, 89, 255, 0.15);
   }
 
   .bg-dots {

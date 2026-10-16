@@ -27,8 +27,8 @@ export function Ambient() {
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <div className="absolute -top-1/4 -left-1/4 size-[70vmax] rounded-full bg-violet/[0.07] blur-[120px] [animation:aurora-a_28s_ease-in-out_infinite]" />
-      <div className="absolute -right-1/4 -bottom-1/4 size-[60vmax] rounded-full bg-cyber/[0.05] blur-[120px] [animation:aurora-b_34s_ease-in-out_infinite]" />
+      <div className="glow-violet absolute -top-1/3 -left-1/3 size-[90vmax] opacity-30 will-change-transform [animation:aurora-a_28s_ease-in-out_infinite]" />
+      <div className="glow-green absolute -right-1/3 -bottom-1/3 size-[80vmax] opacity-30 will-change-transform [animation:aurora-b_34s_ease-in-out_infinite]" />
       {finePointer && <motion.div className="absolute inset-0" style={{ background: glow }} />}
     </div>
   );

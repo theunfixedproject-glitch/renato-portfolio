@@ -6,6 +6,7 @@ import { Reveal } from "../ui/Reveal";
 import { SectionHeading } from "../ui/SectionHeading";
 import { BeforeAfter } from "./BeforeAfter";
 import { makeoverSites } from "./sites";
+import { BeamBorder } from "../ui/BeamBorder";
 
 export function Makeovers() {
   return (
@@ -76,7 +77,8 @@ export function MakeoverList() {
 export function MakeoverCta() {
   return (
     <Reveal className="mt-24">
-      <div className="beam relative overflow-hidden rounded-3xl border border-violet/20 bg-gradient-to-br from-violet/20 via-coal to-coal p-8 md:flex md:items-center md:justify-between md:gap-10 md:p-12">
+      <div className="relative overflow-hidden rounded-3xl border border-violet/20 bg-gradient-to-br from-violet/20 via-coal to-coal p-8 md:flex md:items-center md:justify-between md:gap-10 md:p-12">
+          <BeamBorder />
         <div>
           <p className="font-display text-2xl font-bold md:text-3xl">Il tuo sito somiglia a un &ldquo;prima&rdquo;?</p>
           <p className="mt-3 max-w-xl text-mist">
