@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { MULTI_SERVICE_LABEL, PREFILL_EVENT, type PrefillDetail } from "@/lib/events";
 import { profile, quoteTypes, quoteUrgency, type QuoteExtra } from "@/lib/data";
-import { availableExtras, estimateQuote, formatEuro, quoteSummary, unitsFor, type QuoteInput } from "@/lib/quote";
+import { availableExtras, estimateQuote, formatEuro, quoteSummary, sizeFor, type QuoteInput } from "@/lib/quote";
 import { AnimatedNumber } from "../ui/AnimatedNumber";
 import { ArrowIcon, CheckIcon, WhatsAppIcon } from "../ui/Icons";
 import { SectionHeading } from "../ui/SectionHeading";
@@ -15,7 +15,6 @@ export function QuoteEstimator() {
   const [input, setInput] = useState<QuoteInput>({ typeIds: ["vetrina"], units: {}, extras: ["seo"], urgencyId: "normal" });
   const result = useMemo(() => estimateQuote(input), [input]);
   const extras = useMemo(() => availableExtras(input.typeIds), [input.typeIds]);
-  const withUnits = quoteTypes.filter((t) => input.typeIds.includes(t.id) && t.perUnit > 0);
 
   const toggleType = (typeId: string) =>
     setInput((s) => {
@@ -57,65 +56,85 @@ export function QuoteEstimator() {
           <fieldset className="min-w-0">
             <legend className="eyebrow mb-2">{step++} · Cosa ti serve?</legend>
             <p className="mb-4 text-sm text-mist">Puoi sceglierne più di uno.</p>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-flow-dense gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {quoteTypes.map((t) => {
                 const active = input.typeIds.includes(t.id);
+                const size = sizeFor(input, t);
                 return (
-                  <label
+                  <motion.div
+                    layout
                     key={t.id}
-                    className={`relative cursor-pointer rounded-2xl border p-4 pr-10 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-cyber ${
-                      active ? "border-violet bg-violet/10" : "border-line hover:border-mist/50"
+                    transition={{ type: "spring", stiffness: 400, damping: 34 }}
+                    className={`rounded-2xl border transition-colors ${active ? "border-violet bg-violet/10" : "border-line hover:border-mist/50"} ${
+                      active && t.sizes ? "sm:col-span-2 xl:col-span-3" : ""
                     }`}
                   >
-                    <input type="checkbox" checked={active} onChange={() => toggleType(t.id)} className="sr-only" />
-                    <span className="block font-display text-lg font-bold">{t.label}</span>
-                    <span className="mt-1 block text-xs text-mist">{t.hint}</span>
-                    <span
-                      aria-hidden
-                      className={`absolute top-3 right-3 grid size-5 place-items-center rounded-md border transition-colors ${
-                        active ? "border-violet bg-violet text-ink" : "border-line"
-                      }`}
-                    >
-                      {active && <CheckIcon width={12} height={12} strokeWidth={3} />}
-                    </span>
-                  </label>
+                    <label className="relative block cursor-pointer rounded-2xl p-4 pr-10 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-cyber">
+                      <input type="checkbox" checked={active} onChange={() => toggleType(t.id)} className="sr-only" />
+                      <span className="block font-display text-lg font-bold">{t.label}</span>
+                      <span className="mt-1 block text-xs text-mist">{t.hint}</span>
+                      <span
+                        aria-hidden
+                        className={`absolute top-3 right-3 grid size-5 place-items-center rounded-md border transition-colors ${
+                          active ? "border-violet bg-violet text-ink" : "border-line"
+                        }`}
+                      >
+                        {active && <CheckIcon width={12} height={12} strokeWidth={3} />}
+                      </span>
+                    </label>
+
+                    <AnimatePresence initial={false}>
+                      {active && t.sizes && size && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div role="radiogroup" aria-label={`Quanto è grande: ${t.label}`} className="px-4 pb-4">
+                            <p className="mb-2 text-sm text-snow/85">Quanto è grande?</p>
+                            <div className="grid grid-cols-3 gap-2">
+                              {t.sizes.map((sz, i) => {
+                                const on = sz.id === size.id;
+                                return (
+                                  <button
+                                    key={sz.id}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={on}
+                                    onClick={() => setInput((st) => ({ ...st, units: { ...st.units, [t.id]: sz.units } }))}
+                                    className={`relative flex flex-col items-center gap-2 rounded-xl border px-2 py-3 transition-colors ${
+                                      on ? "border-cyber bg-cyber/10 text-cyber" : "border-line bg-ink/50 text-mist hover:text-snow"
+                                    }`}
+                                  >
+                                    <SizeGlyph level={i} />
+                                    <span className="text-sm font-semibold">{sz.label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <AnimatePresence mode="wait" initial={false}>
+                              <motion.p
+                                key={size.id}
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -4 }}
+                                transition={{ duration: 0.18 }}
+                                className="mt-3 flex items-start gap-2 text-sm text-mist"
+                              >
+                                <span aria-hidden className="text-cyber">→</span>
+                                {size.hint}
+                              </motion.p>
+                            </AnimatePresence>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 );
               })}
             </div>
           </fieldset>
-
-          <AnimatePresence initial={false}>
-            {withUnits.length > 0 && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-6">
-                <p className="eyebrow">{step++} · Quanto è grande?</p>
-                {withUnits.map((t) => {
-                  const value = unitsFor(input, t);
-                  return (
-                    <div key={t.id}>
-                      <label htmlFor={`quote-units-${t.id}`} className="mb-3 flex justify-between gap-4 text-sm">
-                        <span>
-                          {t.label}: quante {t.unitLabel}?
-                        </span>
-                        <span className="font-mono text-cyber">{value}</span>
-                      </label>
-                      <input
-                        id={`quote-units-${t.id}`}
-                        type="range"
-                        min={1}
-                        max={t.includedUnits * 4}
-                        value={value}
-                        onChange={(e) => setInput((s) => ({ ...s, units: { ...s.units, [t.id]: Number(e.target.value) } }))}
-                        className="w-full accent-[var(--color-violet)]"
-                      />
-                      <p className="mt-1 font-mono text-xs text-mist">
-                        {t.includedUnits} {t.unitLabel} incluse nel prezzo base
-                      </p>
-                    </div>
-                  );
-                })}
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           <fieldset className="min-w-0">
             <legend className="eyebrow mb-2">{step++} · Extra</legend>
@@ -272,5 +291,16 @@ function ExtraChip({ extra, on, onToggle }: { extra: QuoteExtra; on: boolean; on
       </span>
       {extra.label}
     </motion.button>
+  );
+}
+
+/** Tre quadratini che si riempiono: piccolo, medio, grande. */
+function SizeGlyph({ level }: { level: number }) {
+  return (
+    <span aria-hidden className="flex items-end gap-1">
+      {[0, 1, 2].map((i) => (
+        <span key={i} className={`w-1.5 rounded-sm ${i <= level ? "bg-current" : "bg-current opacity-20"}`} style={{ height: 6 + i * 5 }} />
+      ))}
+    </span>
   );
 }

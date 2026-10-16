@@ -26,6 +26,10 @@ export function availableExtras(typeIds: string[]): QuoteExtra[] {
 
 export const unitsFor = (input: QuoteInput, type: QuoteType) => input.units[type.id] ?? type.includedUnits;
 
+/** La taglia scelta per un servizio (la più piccola finché il cliente non ne sceglie un'altra). */
+export const sizeFor = (input: QuoteInput, type: QuoteType) =>
+  type.sizes?.find((s) => s.units === unitsFor(input, type)) ?? type.sizes?.[0];
+
 /** Restituisce null finché non è scelto almeno un servizio. */
 export function estimateQuote(input: QuoteInput): QuoteResult | null {
   const types = quoteTypes.filter((t) => input.typeIds.includes(t.id));
@@ -70,7 +74,10 @@ export const formatEuro = (n: number) =>
     .replace(/\B(?=(\d{3})+(?!\d))/g, ".")} €`;
 
 export function quoteSummary(input: QuoteInput, result: QuoteResult): string {
-  const services = result.types.map((t) => (t.perUnit > 0 ? `${t.label} (${unitsFor(input, t)} ${t.unitLabel})` : t.label));
+  const services = result.types.map((t) => {
+    const size = sizeFor(input, t);
+    return size ? `${t.label} ${size.label.toLowerCase()} (${size.hint.toLowerCase()})` : t.label;
+  });
   const urgency = quoteUrgency.find((u) => u.id === input.urgencyId)?.label ?? "";
   return [
     `${services.length > 1 ? "Servizi" : "Servizio"}: ${services.join(", ")}`,

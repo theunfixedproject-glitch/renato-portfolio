@@ -253,15 +253,19 @@ export type QuoteType = {
   perUnit: number;
   includedUnits: number;
   unitLabel: string;
+  /** Le tre taglie proposte al cliente, descritte a parole invece che in numero di pagine. */
+  sizes?: QuoteSize[];
 };
+
+export type QuoteSize = { id: "s" | "m" | "l"; label: string; hint: string; units: number };
 
 export const quoteTypes: QuoteType[] = [
   { id: "landing", label: "Landing page", hint: "Una pagina, un obiettivo", base: [450, 800], weeks: [1, 2], perUnit: 0, includedUnits: 1, unitLabel: "sezioni" },
-  { id: "vetrina", label: "Sito vetrina", hint: "Presenta la tua attività", base: [900, 1600], weeks: [2, 4], perUnit: 120, includedUnits: 5, unitLabel: "pagine" },
-  { id: "ecommerce", label: "E-commerce", hint: "Vendi online", base: [2200, 4000], weeks: [4, 7], perUnit: 150, includedUnits: 8, unitLabel: "pagine" },
-  { id: "webapp", label: "Web app", hint: "Gestionali, prenotazioni, aree clienti", base: [3000, 6500], weeks: [5, 10], perUnit: 250, includedUnits: 6, unitLabel: "schermate" },
-  { id: "app", label: "App mobile", hint: "Android e iOS", base: [3500, 8000], weeks: [6, 12], perUnit: 300, includedUnits: 6, unitLabel: "schermate" },
-  { id: "bot", label: "Bot / automazione", hint: "WhatsApp, Telegram, sito", base: [400, 1500], weeks: [1, 3], perUnit: 80, includedUnits: 3, unitLabel: "flussi" },
+  { id: "vetrina", label: "Sito vetrina", hint: "Presenta la tua attività", base: [900, 1600], weeks: [2, 4], perUnit: 120, includedUnits: 5, unitLabel: "pagine", sizes: [{ id: "s", label: "Piccolo", hint: "Home, chi siamo, servizi e contatti", units: 5 }, { id: "m", label: "Medio", hint: "Anche galleria, recensioni e pagine dei servizi", units: 9 }, { id: "l", label: "Grande", hint: "Una pagina per ogni servizio, più news o blog", units: 15 }] },
+  { id: "ecommerce", label: "E-commerce", hint: "Vendi online", base: [2200, 4000], weeks: [4, 7], perUnit: 150, includedUnits: 8, unitLabel: "pagine", sizes: [{ id: "s", label: "Piccolo", hint: "Fino a 30 prodotti", units: 8 }, { id: "m", label: "Medio", hint: "Fino a 200 prodotti, divisi in categorie", units: 14 }, { id: "l", label: "Grande", hint: "Catalogo ampio, con varianti e filtri", units: 22 }] },
+  { id: "webapp", label: "Web app", hint: "Gestionali, prenotazioni, aree clienti", base: [3000, 6500], weeks: [5, 10], perUnit: 250, includedUnits: 6, unitLabel: "schermate", sizes: [{ id: "s", label: "Piccola", hint: "Una funzione principale, es. le prenotazioni", units: 6 }, { id: "m", label: "Media", hint: "Più funzioni e un pannello di gestione", units: 12 }, { id: "l", label: "Grande", hint: "Un gestionale completo, con utenti e report", units: 20 }] },
+  { id: "app", label: "App mobile", hint: "Android e iOS", base: [3500, 8000], weeks: [6, 12], perUnit: 300, includedUnits: 6, unitLabel: "schermate", sizes: [{ id: "s", label: "Piccola", hint: "Poche schermate, una funzione principale", units: 6 }, { id: "m", label: "Media", hint: "Profili, notifiche e più sezioni", units: 12 }, { id: "l", label: "Grande", hint: "App completa, con pagamenti e pannello di gestione", units: 20 }] },
+  { id: "bot", label: "Bot / automazione", hint: "WhatsApp, Telegram, sito", base: [400, 1500], weeks: [1, 3], perUnit: 80, includedUnits: 3, unitLabel: "flussi", sizes: [{ id: "s", label: "Base", hint: "Risponde alle domande frequenti", units: 3 }, { id: "m", label: "Avanzato", hint: "Raccoglie anche ordini o prenotazioni", units: 6 }, { id: "l", label: "Completo", hint: "Collegato al tuo gestionale o calendario", units: 10 }] },
 ];
 
 export type QuoteExtra = {
