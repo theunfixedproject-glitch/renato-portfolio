@@ -14,7 +14,7 @@ export function TechStack() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeading
           id="stack-title"
-          index="04"
+          index="05"
         eyebrow="stack & metriche"
           title={
             <>

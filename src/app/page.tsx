@@ -1,4 +1,5 @@
 import { About } from "@/components/about/About";
+import { Analysis } from "@/components/analysis/Analysis";
 import { Contact } from "@/components/contact/Contact";
 import { Hero } from "@/components/hero/Hero";
 import { Makeovers } from "@/components/makeovers/Makeovers";
@@ -13,6 +14,7 @@ export default function Home() {
       <About />
       <Makeovers />
       <WorkCategories />
+      <Analysis />
       <TechStack />
       <QuoteEstimator />
       <Contact />

@@ -42,7 +42,7 @@ export function QuoteEstimator() {
     <section aria-labelledby="preventivo-title" id="preventivo" className="section">
       <SectionHeading
         id="preventivo-title"
-        index="05"
+        index="06"
         eyebrow="preventivo rapido"
         title={
           <>

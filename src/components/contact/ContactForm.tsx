@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { cloneElement, useEffect, useId, useRef, useState } from "react";
-import { profile, quoteTypes } from "@/lib/data";
+import { ANALYSIS_LABEL, profile, quoteTypes } from "@/lib/data";
 import { MULTI_SERVICE_LABEL, PREFILL_EVENT, type PrefillDetail } from "@/lib/events";
 import { ArrowIcon } from "../ui/Icons";
 import { BeamBorder } from "../ui/BeamBorder";
@@ -12,7 +12,7 @@ type Fields = { name: string; email: string; phone: string; type: string; messag
 type Errors = Partial<Record<keyof Fields, string>>;
 
 const empty: Fields = { name: "", email: "", phone: "", type: "", message: "", website: "" };
-const projectTypes = [...quoteTypes.map((t) => t.label), MULTI_SERVICE_LABEL, "Altro / non lo so ancora"];
+const projectTypes = [...quoteTypes.map((t) => t.label), MULTI_SERVICE_LABEL, ANALYSIS_LABEL, "Altro / non lo so ancora"];
 
 function validate(f: Fields): Errors {
   const e: Errors = {};
@@ -38,8 +38,9 @@ export function ContactForm() {
   // Il preventivo rapido può precompilare il form.
   useEffect(() => {
     const onPrefill = (e: Event) => {
-      const { type, message } = (e as CustomEvent<PrefillDetail>).detail;
-      setFields((f) => ({ ...f, type, message: `Ciao Renato, ecco la stima che ho calcolato sul sito:\n\n${message}\n\n` }));
+      const { type, message, raw } = (e as CustomEvent<PrefillDetail>).detail;
+      const text = raw ? message : `Ciao Renato, ecco la stima che ho calcolato sul sito:\n\n${message}\n\n`;
+      setFields((f) => ({ ...f, type, message: text }));
       setStatus("idle");
       setFlash(true);
       window.setTimeout(() => setFlash(false), 1400);

@@ -24,6 +24,7 @@ export const navLinks = [
   { id: "chi-sono", label: "Chi sono" },
   { id: "prima-dopo", label: "Prima e dopo" },
   { id: "lavori", label: "Lavori" },
+  { id: "analisi", label: "Analisi" },
   { id: "preventivo", label: "Preventivo" },
   { id: "contatti", label: "Contatti" },
 ] as const;
@@ -363,4 +364,84 @@ export const makeovers: Makeover[] = [
       { before: "\"OFFERTA SPECIALE!!!\" che scorre", after: "Tono calmo, servizi chiari e WhatsApp a portata di mano" },
     ],
   },
+];
+
+/* ------------------------------------------------------------------ */
+/* Analisi, report e dati su commissione                                */
+/* ------------------------------------------------------------------ */
+
+/** Valore del campo "Tipo di progetto" del form per le richieste di analisi. */
+export const ANALYSIS_LABEL = "Analisi, report o dati";
+
+export type AnalysisOffer = {
+  id: "concorrenza" | "siti" | "mercato" | "operatori";
+  title: string;
+  question: string;
+  description: string;
+  deliverables: string[];
+  /** Prezzo "a partire da", in euro. */
+  from: number;
+  days: string;
+  accent: "violet" | "green";
+};
+
+export const analysisOffers: AnalysisOffer[] = [
+  {
+    id: "concorrenza",
+    title: "Analisi della concorrenza",
+    question: "Chi sono i tuoi concorrenti, e cosa fanno meglio di te?",
+    description:
+      "Prendo i concorrenti diretti della tua zona e li metto a confronto: servizi, prezzi pubblicati, come si presentano online, dove sono forti e dove lasciano spazio a te.",
+    deliverables: ["Fino a 10 concorrenti a confronto", "Prezzi e offerte pubblicate", "Punti deboli da sfruttare", "Tre mosse concrete per distinguerti"],
+    from: 190,
+    days: "5-7 giorni",
+    accent: "violet",
+  },
+  {
+    id: "siti",
+    title: "Report dei siti di un settore",
+    question: "Come si presentano online i siti della tua zona?",
+    description:
+      "Un sistema automatico raccoglie e legge decine di siti di un settore o di un territorio. Ognuno riceve un punteggio su 100, i difetti osservati e l'intervento consigliato.",
+    deliverables: ["Da 30 a 100 siti analizzati", "Punteggio su 20 criteri", "Classifica con note sito per sito", "Versione consultabile con filtri e ricerca"],
+    from: 290,
+    days: "5-10 giorni",
+    accent: "green",
+  },
+  {
+    id: "mercato",
+    title: "Analisi di mercato",
+    question: "C'è davvero spazio per la tua idea?",
+    description:
+      "Prima di aprire un'attività o lanciare un servizio: quanta domanda c'è, chi la serve già, a che prezzi, e dove resta un buco da occupare. Con numeri ufficiali e fonti cliccabili.",
+    deliverables: ["Dimensione del bacino con dati ufficiali", "Mappa dell'offerta esistente", "Prezzi praticati", "Opportunità e rischi, con livello di confidenza"],
+    from: 390,
+    days: "7-10 giorni",
+    accent: "violet",
+  },
+  {
+    id: "operatori",
+    title: "Mappatura degli operatori",
+    question: "Chi lavora nel tuo settore, comune per comune?",
+    description:
+      "L'elenco ordinato degli operatori di un settore in una zona, ricostruito da albi, elenchi pubblici e siti ufficiali: per trovare partner, fornitori o capire quanto è affollato il mercato.",
+    deliverables: ["Da 50 a 200 schede", "Recapiti professionali pubblici", "Fonte indicata per ogni dato", "Foglio Excel con filtri per comune"],
+    from: 150,
+    days: "3-5 giorni",
+    accent: "green",
+  },
+];
+
+/** Numeri reali dai report già consegnati, mostrati come prova (senza nomi delle attività). */
+export const analysisProof = [
+  { value: 490, suffix: "", label: "siti interrogati per un solo report sull'Alto Garda" },
+  { value: 24600, suffix: "", label: "studenti contati nel bacino di un'analisi di mercato" },
+  { value: 38, suffix: "", label: "comuni coperti in una mappatura di 100 professionisti" },
+  { value: 151, suffix: "", label: "pagine lette e valutate per 50 siti di B&B" },
+];
+
+export const analysisPrinciples = [
+  { title: "Ogni dato ha la sua fonte", text: "Accanto a ogni numero c'è il link da cui viene. Puoi controllare tutto, riga per riga." },
+  { title: "Dati, letture e ipotesi separati", text: "Ti dico cosa è un fatto, cosa è una mia interpretazione e cosa resta da verificare." },
+  { title: "Pronto da usare", text: "PDF da leggere, versione web con ricerca e filtri, foglio Excel da lavorare." },
 ];

@@ -48,6 +48,8 @@ Quasi tutto si cambia da `src/lib/data.ts`:
   `/lavori/<categoria>` e nel conteggio della card in home.
 - **Prima e dopo:** testi in `makeovers`; i mockup sono componenti in `src/components/makeovers/sites.tsx`
   (disegnati a 1280×800) e le illustrazioni al posto delle foto in `Scenery.tsx`.
+- **Analisi e report:** offerte, prezzi "a partire da", tempi e numeri di prova in `analysisOffers`,
+  `analysisProof` e `analysisPrinciples` (fondo di `data.ts`).
 - **Prezzi del preventivo:** `quoteTypes`, `quoteExtras`, `quoteUrgency`.
   `priceFactor` (ora `0.8`, cioè -20%) si applica a tutti i prezzi: con `1` tornano quelli pieni.
 - **Extra del preventivo:** il campo `for` di ogni extra dice per quali servizi compare
