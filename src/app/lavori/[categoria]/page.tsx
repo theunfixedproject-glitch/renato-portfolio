@@ -49,6 +49,13 @@ export default async function CategoriaPage({ params }: { params: Promise<{ cate
       <div className="mt-20 space-y-28 md:space-y-36">
         {cat.id === "siti-web" ? (
           <>
+            {list.map((p, i) => (
+              <ProjectShowcase key={p.id} project={p} index={i} />
+            ))}
+            <div className="border-t border-line pt-20">
+              <p className="eyebrow">prima e dopo</p>
+              <h2 className="mt-4 font-display text-3xl font-bold md:text-4xl">Siti da incubo, rimessi a nuovo</h2>
+            </div>
             <p className="max-w-2xl text-mist">
               Restyling di siti di strutture ricettive: trascina la maniglia per confrontare il sito prima e dopo il mio
               intervento. Strutture, nomi e indirizzi sono di fantasia.

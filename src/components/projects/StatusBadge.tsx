@@ -4,6 +4,7 @@ export function StatusBadge({ status }: { status: ProjectStatus | "concept" }) {
   const styles = {
     online: { box: "border-cyber/40 bg-cyber/10 text-cyber", dot: "bg-cyber", label: "Online" },
     "in-sviluppo": { box: "border-violet/40 bg-violet/10 text-violet-soft", dot: "animate-pulse bg-violet", label: "In sviluppo" },
+    realizzato: { box: "border-cyber/40 bg-cyber/10 text-cyber", dot: "bg-cyber", label: "Realizzato" },
     concept: { box: "border-white/20 bg-white/5 text-snow", dot: "bg-snow", label: "Concept" },
   }[status];
   return (

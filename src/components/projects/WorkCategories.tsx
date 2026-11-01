@@ -71,7 +71,7 @@ export function WorkCategories() {
 
 export function CategoryGrid({ current }: { current?: string }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:[&>*:last-child:nth-child(odd)]:col-span-2">
       {categories.map((cat, i) => {
         const summary = categorySummary(cat.id);
         const previews = categoryPreviews(cat.id);
@@ -97,12 +97,12 @@ export function CategoryGrid({ current }: { current?: string }) {
 
               {previews.length > 0 && (
                 <div aria-hidden className="pointer-events-none absolute -right-4 -bottom-16 hidden gap-3 sm:flex md:-bottom-10">
-                  {previews.map((src, j) => (
+                  {previews.map(({ src, landscape }, j) => (
                     <div
                       key={src}
                       className={`relative w-20 overflow-hidden rounded-xl border-4 border-[#1c1c24] shadow-xl transition-transform duration-500 md:w-24 ${
                         j === 0 ? "rotate-[-8deg] group-hover:-translate-y-4" : "rotate-[6deg] group-hover:-translate-y-6"
-                      } ${src.includes("vicarius") ? "aspect-[16/10] w-36 md:w-44" : "aspect-[9/19]"}`}
+                      } ${landscape ? "aspect-[16/10] w-36 md:w-44" : "aspect-[9/19]"}`}
                     >
                       <Image src={src} alt="" fill sizes="180px" className="object-cover object-top" />
                     </div>

@@ -5,6 +5,7 @@ import type { Project } from "@/lib/data";
 import { Reveal } from "../ui/Reveal";
 import { PhoneFrame } from "./PhoneFrame";
 import { StatusBadge } from "./StatusBadge";
+import { VideoShowcase } from "./VideoShowcase";
 
 /** Scheda completa di un progetto: testi, vantaggi, tecnologie e tutte le schermate. */
 export function ProjectShowcase({ project, index }: { project: Project; index: number }) {
@@ -47,10 +48,25 @@ export function ProjectShowcase({ project, index }: { project: Project; index: n
             </ul>
           </div>
         </div>
+        {project.url && (
+          <a
+            href={project.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shine mt-8 inline-flex min-h-12 items-center gap-3 rounded-full bg-cyber px-7 py-4 text-base font-semibold text-ink shadow-[0_0_40px_-10px_var(--color-cyber)]"
+          >
+            {project.urlLabel ?? "Apri il progetto"}
+            <svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M7 17 17 7M8 7h9v9" />
+            </svg>
+          </a>
+        )}
       </Reveal>
 
       <Reveal delay={0.1} className="min-w-0">
-        {project.orientation === "portrait" ? (
+        {project.videos?.length ? (
+          <VideoShowcase videos={project.videos} />
+        ) : project.orientation === "portrait" ? (
           <div className="relative">
             <div
               tabIndex={0}

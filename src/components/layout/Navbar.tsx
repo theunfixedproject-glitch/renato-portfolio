@@ -100,7 +100,7 @@ export function Navbar() {
             <span className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-violet to-violet-soft font-mono text-sm text-ink shadow-[0_0_20px_-4px_var(--color-violet)] transition-transform duration-500 group-hover:rotate-[360deg]">
               RM
             </span>
-            <span className={back ? "hidden lg:inline" : "hidden sm:inline"}>{profile.name}</span>
+            <span className={back ? "hidden" : "hidden sm:inline"}>{profile.name}</span>
           </a>
           {back && (
             <Link
@@ -124,7 +124,7 @@ export function Navbar() {
                   <a
                     href={`/#${link.id}`}
                     aria-current={isActive ? "location" : undefined}
-                    className={`relative block rounded-full px-4 py-2 font-mono text-xs tracking-wide transition-colors ${
+                    className={`relative block rounded-full px-3 py-2 font-mono text-xs tracking-wide whitespace-nowrap transition-colors xl:px-4 ${
                       isActive ? "text-snow" : "text-mist hover:text-snow"
                     }`}
                   >

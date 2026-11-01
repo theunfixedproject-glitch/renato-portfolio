@@ -300,7 +300,11 @@ function FloatingShape({ shared, index }: { shared: Shared; index: number }) {
     }
     // Le forme si girano leggermente verso il puntatore.
     g.rotation.z += (shared.pointer.x * 0.5 - g.rotation.z) * 0.03;
-    g.position.x += (s.pos[0] + shared.pointer.x * 0.8 - g.position.x) * 0.04;
+    // Sempre sul bordo dello schermo, qualunque sia la larghezza: così non coprono i testi.
+    const cam = state.camera as THREE.PerspectiveCamera;
+    const halfWidth = (cam.position.z - s.pos[2]) * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * cam.aspect;
+    const edgeX = Math.sign(s.pos[0]) * Math.max(6, halfWidth * (cam.aspect > 1.2 ? 1.12 : 0.9));
+    g.position.x += (edgeX + shared.pointer.x * 0.8 - g.position.x) * 0.04;
     if (inner.current) inner.current.rotation.y -= delta * s.speed * 2;
   });
 
@@ -308,7 +312,7 @@ function FloatingShape({ shared, index }: { shared: Shared; index: number }) {
     <group ref={group} position={s.pos} scale={s.scale}>
       <mesh>
         <Geometry kind={s.kind} />
-        <meshBasicMaterial color={s.color} wireframe transparent opacity={0.32} blending={THREE.AdditiveBlending} depthWrite={false} />
+        <meshBasicMaterial color={s.color} wireframe transparent opacity={0.24} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
       <mesh ref={inner} scale={0.55}>
         <Geometry kind={s.kind} />

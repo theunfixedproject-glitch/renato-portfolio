@@ -19,6 +19,12 @@ const paths: Record<CategoryId, React.ReactNode> = {
       <path d="M3 9h18M7 6.5h.01M10 6.5h.01M9 14l-2 1.5L9 17M15 14l2 1.5-2 1.5" />
     </>
   ),
+  "video-ai": (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <path d="m10 9 5 3-5 3Z" />
+    </>
+  ),
   "bot-dashboard": (
     <>
       <rect x="3" y="3" width="18" height="18" rx="3" />

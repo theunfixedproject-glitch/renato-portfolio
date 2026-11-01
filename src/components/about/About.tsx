@@ -1,11 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { profile, services } from "@/lib/data";
 import { Reveal } from "../ui/Reveal";
 import { Tilt } from "../ui/Tilt";
 import { SectionHeading } from "../ui/SectionHeading";
 import { BeamBorder } from "../ui/BeamBorder";
+import { ArrowIcon } from "../ui/Icons";
 
 const serviceIcons: Record<string, React.ReactNode> = {
   web: (
@@ -18,6 +20,12 @@ const serviceIcons: Record<string, React.ReactNode> = {
     <>
       <rect x="6" y="2" width="12" height="20" rx="3" />
       <path d="M10 18h4M9 7h6M9 11h4" />
+    </>
+  ),
+  video: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <path d="m10 9 5 3-5 3Z" />
     </>
   ),
   bot: (
@@ -56,7 +64,7 @@ export function About() {
         }
       />
 
-      <div className="grid gap-5 md:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2">
         {services.map((service, i) => (
           <Reveal key={service.id} delay={i * 0.1}>
             <Tilt className="h-full rounded-3xl">
@@ -93,6 +101,31 @@ export function About() {
                   </li>
                 ))}
               </ul>
+              {service.id === "video" && (
+                <Link
+                  href="/lavori/video-ai"
+                  className="relative mt-6 flex items-center gap-4 rounded-2xl border border-line bg-ink/60 p-3 transition-colors hover:border-cyber"
+                >
+                  <span className="relative aspect-[9/16] w-16 shrink-0 overflow-hidden rounded-xl border-2 border-[#1c1c24] bg-black">
+                    <video
+                      src="/video/tritabottega-loop.mp4"
+                      poster="/video/tritabottega-9x16.webp"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      aria-hidden
+                      className="h-full w-full object-cover"
+                    />
+                  </span>
+                  <span>
+                    <span className="block font-semibold">Guarda un esempio</span>
+                    <span className="block text-sm text-mist">Lo spot per Tritabottega, in 15 secondi</span>
+                  </span>
+                  <ArrowIcon width={18} height={18} className="ml-auto shrink-0 text-cyber" />
+                </Link>
+              )}
             </motion.article>
             </Tilt>
           </Reveal>

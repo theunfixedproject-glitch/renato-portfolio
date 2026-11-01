@@ -33,7 +33,7 @@ export const navLinks = [
 /* Lavori personali, divisi per categoria                              */
 /* ------------------------------------------------------------------ */
 
-export type CategoryId = "applicazioni" | "videogiochi" | "siti-web" | "bot-dashboard";
+export type CategoryId = "applicazioni" | "videogiochi" | "siti-web" | "video-ai" | "bot-dashboard";
 
 export type Category = {
   id: CategoryId;
@@ -64,6 +64,13 @@ export const categories: Category[] = [
     tagline: "Vetrine, prenotazioni, restyling",
     description: "Siti veloci e curati, pensati per farti trovare su Google e trasformare le visite in richieste.",
     accent: "green",
+  },
+  {
+    id: "video-ai",
+    label: "Video AI",
+    tagline: "Spot per social, sito e vetrine",
+    description: "Video promozionali generati con l'intelligenza artificiale: brevi, curati ed economici, pensati per le piccole e medie imprese.",
+    accent: "violet",
   },
   {
     id: "bot-dashboard",
@@ -107,9 +114,17 @@ export const services: Service[] = [
       "Bot per WhatsApp, Telegram e sito che rispondono ai clienti, raccolgono ordini e ti tolgono il lavoro ripetitivo.",
     outcomes: ["Risposte 24/7", "Integrazione con i tuoi strumenti", "Ore di lavoro risparmiate"],
   },
+  {
+    id: "video",
+    title: "Video promozionali AI",
+    tag: "04 / video",
+    description:
+      "Spot da 15-30 secondi generati con l'intelligenza artificiale: il modo più economico per avere un video curato per social, sito e vetrine digitali.",
+    outcomes: ["Pronti in pochi giorni", "Formati verticale e orizzontale", "Una frazione del costo di una troupe"],
+  },
 ];
 
-export type ProjectStatus = "in-sviluppo" | "online";
+export type ProjectStatus = "in-sviluppo" | "online" | "realizzato";
 
 export type Project = {
   id: string;
@@ -127,6 +142,19 @@ export type Project = {
   /** Orientamento delle immagini: decide come vengono impaginate. */
   orientation: "portrait" | "landscape";
   gallery: { src: string; alt: string }[];
+  /** Indirizzo del progetto online, se c'è. */
+  url?: string;
+  urlLabel?: string;
+  /** Video da mostrare nella scheda del progetto. */
+  videos?: ProjectVideo[];
+};
+
+export type ProjectVideo = {
+  src: string;
+  poster: string;
+  aspect: "16/9" | "9/16";
+  title: string;
+  caption: string;
 };
 
 export const projects: Project[] = [
@@ -206,6 +234,49 @@ export const projects: Project[] = [
     orientation: "landscape",
     gallery: [{ src: "/img/projects/vicarius.webp", alt: "Vicarius: la regia con i cinque monitor del menu" }],
   },
+  {
+    id: "tritabottega",
+    category: "siti-web",
+    name: "Tritabottega",
+    kind: "E-commerce · online",
+    status: "online",
+    tagline: "Palline di Natale fatte a mano con gli scarti di potatura, in Trentino.",
+    description:
+      "Il mio negozio online: un e-commerce vero, con catalogo, schede prodotto e carrello, costruito per vendere un prodotto artigianale. È anche l'esempio concreto di come imposto un e-commerce per una piccola attività: racconto del prodotto in primo piano, acquisto in pochi passi.",
+    benefits: ["Negozio online funzionante", "Racconto del prodotto, non solo un catalogo", "Acquisto in pochi passi, anche da telefono", "Spot promozionale AI abbinato"],
+    stack: ["E-commerce", "Pagamenti online", "Responsive", "Video AI"],
+    accent: "green",
+    cover: "/img/projects/tritabottega-albero.webp",
+    orientation: "landscape",
+    gallery: [
+      { src: "/img/projects/tritabottega-albero.webp", alt: "Tritabottega: le palline appese all'albero" },
+      { src: "/img/projects/tritabottega-pallina.webp", alt: "Tritabottega: una pallina appena finita" },
+      { src: "/img/projects/tritabottega-trucioli.webp", alt: "Tritabottega: i trucioli degli scarti di potatura" },
+    ],
+    url: "https://ramaglia.weareunfixed.chatgpt.site/",
+    urlLabel: "Visita il negozio",
+  },
+  {
+    id: "spot-tritabottega",
+    category: "video-ai",
+    name: "Il ramo ritorna",
+    kind: "Spot · Video AI",
+    status: "realizzato",
+    tagline: "Uno spot da 15 secondi per Tritabottega, in verticale e in orizzontale.",
+    description:
+      "Dalla potatura all'albero di Natale in sei inquadrature. Le immagini sono generate con l'intelligenza artificiale seguendo uno storyboard; poi aggiungo testi, marchio, musica e invito all'acquisto, e lo preparo nei formati per social, sito e vetrine digitali.",
+    benefits: ["Pronto in pochi giorni", "Formato verticale per Reel, TikTok e Storie", "Formato orizzontale per sito e YouTube", "Costo da piccola impresa"],
+    stack: ["Video generativo", "Storyboard", "Montaggio", "Motion graphics"],
+    accent: "violet",
+    cover: "/video/tritabottega-16x9.webp",
+    orientation: "landscape",
+    gallery: [],
+    videos: [
+      { src: "/video/tritabottega-16x9.mp4", poster: "/video/tritabottega-16x9.webp", aspect: "16/9", title: "Lo spot finito", caption: "Orizzontale 16:9, per sito, YouTube e schermi" },
+      { src: "/video/tritabottega-9x16.mp4", poster: "/video/tritabottega-9x16.webp", aspect: "9/16", title: "Versione verticale", caption: "9:16, per Reel, TikTok e Storie" },
+      { src: "/video/tritabottega-grezzo.mp4", poster: "/video/tritabottega-grezzo.webp", aspect: "16/9", title: "Il girato AI, prima del montaggio", caption: "Le inquadrature generate dallo storyboard, senza testi né marchio" },
+    ],
+  },
 ];
 
 export const techStack = [
@@ -267,6 +338,7 @@ export const quoteTypes: QuoteType[] = [
   { id: "webapp", label: "Web app", hint: "Gestionali, prenotazioni, aree clienti", base: [3000, 6500], weeks: [5, 10], perUnit: 250, includedUnits: 6, unitLabel: "schermate", sizes: [{ id: "s", label: "Piccola", hint: "Una funzione principale, es. le prenotazioni", units: 6 }, { id: "m", label: "Media", hint: "Più funzioni e un pannello di gestione", units: 12 }, { id: "l", label: "Grande", hint: "Un gestionale completo, con utenti e report", units: 20 }] },
   { id: "app", label: "App mobile", hint: "Android e iOS", base: [3500, 8000], weeks: [6, 12], perUnit: 300, includedUnits: 6, unitLabel: "schermate", sizes: [{ id: "s", label: "Piccola", hint: "Poche schermate, una funzione principale", units: 6 }, { id: "m", label: "Media", hint: "Profili, notifiche e più sezioni", units: 12 }, { id: "l", label: "Grande", hint: "App completa, con pagamenti e pannello di gestione", units: 20 }] },
   { id: "bot", label: "Bot / automazione", hint: "WhatsApp, Telegram, sito", base: [400, 1500], weeks: [1, 3], perUnit: 80, includedUnits: 3, unitLabel: "flussi", sizes: [{ id: "s", label: "Base", hint: "Risponde alle domande frequenti", units: 3 }, { id: "m", label: "Avanzato", hint: "Raccoglie anche ordini o prenotazioni", units: 6 }, { id: "l", label: "Completo", hint: "Collegato al tuo gestionale o calendario", units: 10 }] },
+  { id: "video", label: "Video promozionale AI", hint: "Spot per social e sito", base: [190, 350], weeks: [1, 1], perUnit: 150, includedUnits: 1, unitLabel: "video", sizes: [{ id: "s", label: "Piccolo", hint: "Uno spot da 15 secondi, in un formato", units: 1 }, { id: "m", label: "Medio", hint: "Lo spot in verticale e orizzontale, più una versione senza testi", units: 2 }, { id: "l", label: "Grande", hint: "Fino a tre spot da 15-30 secondi per una campagna", units: 4 }] },
 ];
 
 export type QuoteExtra = {
@@ -281,6 +353,9 @@ export type QuoteExtra = {
   featured?: boolean;
 };
 
+/** Siti, app e bot: gli extra "per tutti" valgono per questi, non per i video. */
+const DIGITAL = ["landing", "vetrina", "ecommerce", "webapp", "app", "bot"];
+
 export const quoteExtras: QuoteExtra[] = [
   {
     id: "quote",
@@ -288,7 +363,7 @@ export const quoteExtras: QuoteExtra[] = [
     hint: "Come quello che stai usando adesso: i tuoi clienti vedono subito costi e tempi, e ti contattano con le idee già chiare.",
     price: [350, 800],
     weeks: 1,
-    for: "all",
+    for: DIGITAL,
     featured: true,
   },
   { id: "design", label: "Logo e identità visiva", price: [300, 700], weeks: 1, for: ["landing", "vetrina", "ecommerce", "webapp", "app"] },
@@ -303,8 +378,12 @@ export const quoteExtras: QuoteExtra[] = [
   { id: "stores", label: "Pubblicazione su Play Store e App Store", price: [250, 500], weeks: 0.5, for: ["app"] },
   { id: "ai", label: "Risposte con intelligenza artificiale", price: [300, 800], weeks: 1, for: ["bot"] },
   { id: "integrations", label: "Integrazioni (CRM, calendario, gestionale)", price: [350, 900], weeks: 1, for: ["vetrina", "ecommerce", "webapp", "app", "bot"] },
-  { id: "lang", label: "Più lingue", price: [200, 450], weeks: 0.5, for: "all" },
-  { id: "maintenance", label: "Manutenzione per 12 mesi", price: [300, 600], weeks: 0, for: "all" },
+  { id: "lang", label: "Più lingue", price: [200, 450], weeks: 0.5, for: DIGITAL },
+  { id: "maintenance", label: "Manutenzione per 12 mesi", price: [300, 600], weeks: 0, for: DIGITAL },
+  { id: "promo-video", label: "Video promozionale AI per il lancio", price: [150, 300], weeks: 0.5, for: DIGITAL },
+  { id: "voice", label: "Voce narrante", price: [60, 150], weeks: 0, for: ["video"] },
+  { id: "subs", label: "Sottotitoli e versione in inglese", price: [50, 120], weeks: 0, for: ["video"] },
+  { id: "music", label: "Musica originale su misura", price: [80, 200], weeks: 0.5, for: ["video"] },
 ];
 
 export const quoteUrgency = [

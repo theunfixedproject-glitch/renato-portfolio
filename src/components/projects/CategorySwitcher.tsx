@@ -8,7 +8,7 @@ export function CategorySwitcher({ current }: { current: CategoryId }) {
   return (
     <nav aria-label="Categorie di lavori" className="mt-12">
       <p className="eyebrow mb-4">cambia categoria</p>
-      <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5 [&>li:last-child:nth-child(odd)]:col-span-2 md:[&>li:last-child:nth-child(odd)]:col-span-1">
         {categories.map((c) => {
           const active = c.id === current;
           return (

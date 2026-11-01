@@ -48,6 +48,8 @@ Quasi tutto si cambia da `src/lib/data.ts`:
   `/lavori/<categoria>` e nel conteggio della card in home.
 - **Prima e dopo:** testi in `makeovers`; i mockup sono componenti in `src/components/makeovers/sites.tsx`
   (disegnati a 1280×800) e le illustrazioni al posto delle foto in `Scenery.tsx`.
+- **Video:** i file stanno in `public/video/` (compressi per il web); un progetto mostra i suoi video
+  con il campo `videos`, e un link esterno con `url` e `urlLabel`.
 - **Analisi e report:** offerte, prezzi "a partire da", tempi e numeri di prova in `analysisOffers`,
   `analysisProof` e `analysisPrinciples` (fondo di `data.ts`).
 - **Prezzi del preventivo:** `quoteTypes`, `quoteExtras`, `quoteUrgency`.
