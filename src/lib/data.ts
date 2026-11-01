@@ -142,6 +142,8 @@ export type Project = {
   /** Orientamento delle immagini: decide come vengono impaginate. */
   orientation: "portrait" | "landscape";
   gallery: { src: string; alt: string }[];
+  /** Proporzioni delle schermate verticali, se diverse dal telefono standard (9/20). */
+  shotAspect?: string;
   /** Indirizzo del progetto online, se c'è. */
   url?: string;
   urlLabel?: string;
@@ -240,18 +242,29 @@ export const projects: Project[] = [
     name: "Tritabottega",
     kind: "E-commerce · online",
     status: "online",
-    tagline: "Palline di Natale fatte a mano con gli scarti di potatura, in Trentino.",
+    tagline: "Decorazioni di Natale fatte a mano con gli scarti di potatura, in Trentino.",
     description:
-      "Il mio negozio online: un e-commerce vero, con catalogo, schede prodotto e carrello, costruito per vendere un prodotto artigianale. È anche l'esempio concreto di come imposto un e-commerce per una piccola attività: racconto del prodotto in primo piano, acquisto in pochi passi.",
-    benefits: ["Negozio online funzionante", "Racconto del prodotto, non solo un catalogo", "Acquisto in pochi passi, anche da telefono", "Spot promozionale AI abbinato"],
-    stack: ["E-commerce", "Pagamenti online", "Responsive", "Video AI"],
+      "Il mio negozio online, ed è anche l'esempio concreto di come imposto un e-commerce per una piccola attività: prima il racconto del prodotto, poi l'acquisto. Bundle da 15, 30 o 60 decorazioni con il risparmio calcolato rispetto ai pezzi singoli, una barra d'acquisto sempre a portata di pollice e un menu pensato per il telefono.",
+    benefits: [
+      "Bundle con il risparmio in evidenza",
+      "Barra d'acquisto sempre visibile da telefono",
+      "Racconto del prodotto prima del catalogo",
+      "Più linee: il Natale e il Nido svuota tasche",
+    ],
+    stack: ["E-commerce", "Carrello", "Mobile first", "Video AI"],
     accent: "green",
-    cover: "/img/projects/tritabottega-albero.webp",
-    orientation: "landscape",
+    cover: "/img/projects/tritabottega-home.webp",
+    orientation: "portrait",
+    shotAspect: "12/25",
     gallery: [
-      { src: "/img/projects/tritabottega-albero.webp", alt: "Tritabottega: le palline appese all'albero" },
-      { src: "/img/projects/tritabottega-pallina.webp", alt: "Tritabottega: una pallina appena finita" },
-      { src: "/img/projects/tritabottega-trucioli.webp", alt: "Tritabottega: i trucioli degli scarti di potatura" },
+      { src: "/img/projects/tritabottega-home.webp", alt: "Tritabottega: la home, \"Un altro ramo del Natale\"" },
+      { src: "/img/projects/tritabottega-menu.webp", alt: "Tritabottega: il menu, con collezione, bundle e regali" },
+      { src: "/img/projects/tritabottega-bundle.webp", alt: "Tritabottega: i bundle per l'albero, da 89 €" },
+      { src: "/img/projects/tritabottega-bundle-dettaglio.webp", alt: "Tritabottega: il bundle da 15 decorazioni con il risparmio calcolato" },
+      { src: "/img/projects/tritabottega-forme.webp", alt: "Tritabottega: le cinque forme, 100% naturali" },
+      { src: "/img/projects/tritabottega-materia.webp", alt: "Tritabottega: la materia, dagli scarti di potatura" },
+      { src: "/img/projects/tritabottega-naturale.webp", alt: "Tritabottega: impasto e cordino, tutto naturale" },
+      { src: "/img/projects/tritabottega-nido.webp", alt: "Tritabottega: il Nido, lo svuota tasche per il resto dell'anno" },
     ],
     url: "https://ramaglia.weareunfixed.chatgpt.site/",
     urlLabel: "Visita il negozio",

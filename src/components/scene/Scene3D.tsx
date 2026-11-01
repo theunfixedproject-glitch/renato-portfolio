@@ -257,71 +257,152 @@ function Dust({ shared, count }: { shared: Shared; count: number }) {
 /* Forme geometriche fluttuanti                                          */
 /* ------------------------------------------------------------------ */
 
-type ShapeKind = "ico" | "knot" | "octa" | "torus" | "dodeca";
+type ShapeKind = "ico" | "octa" | "dodeca" | "tetra" | "star";
 
-const shapes: { kind: ShapeKind; pos: [number, number, number]; scale: number; color: THREE.Color; speed: number }[] = [
-  { kind: "torus", pos: [14, 9, -20], scale: 3, color: VIOLET, speed: 0.1 },
-  { kind: "ico", pos: [11, -11, -10], scale: 2.2, color: GREEN, speed: 0.18 },
-  { kind: "knot", pos: [-11, -24, -10], scale: 1.6, color: VIOLET, speed: 0.15 },
-  { kind: "octa", pos: [11, -37, -9], scale: 2, color: VIOLET, speed: 0.2 },
-  { kind: "dodeca", pos: [-11, -50, -10], scale: 2, color: GREEN, speed: 0.16 },
-  { kind: "ico", pos: [11, -63, -10], scale: 2.4, color: VIOLET, speed: 0.14 },
-  { kind: "knot", pos: [-10, -77, -11], scale: 1.8, color: GREEN, speed: 0.12 },
+type ShapeSpec = {
+  kind: ShapeKind;
+  /** Lato dello schermo: -1 sinistra, 1 destra. */
+  side: 1 | -1;
+  y: number;
+  z: number;
+  /** Grandezza relativa allo spazio libero ai lati del testo. */
+  size: number;
+  color: THREE.Color;
+  speed: number;
+  /** Anello in orbita attorno alla forma. */
+  ring?: boolean;
+};
+
+const shapes: ShapeSpec[] = [
+  { kind: "dodeca", side: 1, y: 8, z: -14, size: 1, color: VIOLET, speed: 0.1, ring: true },
+  { kind: "ico", side: -1, y: -9, z: -10, size: 0.8, color: GREEN, speed: 0.16 },
+  { kind: "star", side: 1, y: -21, z: -10, size: 0.85, color: VIOLET, speed: 0.12 },
+  { kind: "octa", side: -1, y: -33, z: -10, size: 0.8, color: GREEN, speed: 0.18, ring: true },
+  { kind: "dodeca", side: 1, y: -45, z: -10, size: 0.8, color: GREEN, speed: 0.14 },
+  { kind: "ico", side: -1, y: -57, z: -10, size: 0.9, color: VIOLET, speed: 0.12, ring: true },
+  { kind: "tetra", side: 1, y: -69, z: -10, size: 0.8, color: VIOLET, speed: 0.16 },
+  { kind: "star", side: -1, y: -81, z: -10, size: 0.85, color: GREEN, speed: 0.12 },
 ];
 
-function Geometry({ kind }: { kind: ShapeKind }) {
-  switch (kind) {
-    case "ico":
-      return <icosahedronGeometry args={[1, 1]} />;
-    case "knot":
-      return <torusKnotGeometry args={[1, 0.3, 96, 10]} />;
-    case "octa":
-      return <octahedronGeometry args={[1, 0]} />;
-    case "dodeca":
-      return <dodecahedronGeometry args={[1, 0]} />;
-    case "torus":
-      return <torusGeometry args={[1, 0.28, 12, 48]} />;
-  }
+/** Larghezza massima dei contenuti del sito (max-w-7xl) e margini laterali, in px. */
+const CONTENT_WIDTH = 1280;
+const RING_RADIUS = 1.55;
+
+const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+/** Le facce (per il riflesso interno) e gli spigoli (le linee che si vedono) di una forma. */
+function useShapeParts(kind: ShapeKind) {
+  const parts = useMemo(() => {
+    const make = (g: THREE.BufferGeometry) => ({ faces: g, edges: new THREE.EdgesGeometry(g) });
+    switch (kind) {
+      case "ico":
+        return [make(new THREE.IcosahedronGeometry(1, 0))];
+      case "octa":
+        return [make(new THREE.OctahedronGeometry(1, 0))];
+      case "dodeca":
+        return [make(new THREE.DodecahedronGeometry(1, 0))];
+      case "tetra":
+        return [make(new THREE.TetrahedronGeometry(1, 0))];
+      case "star": {
+        // Due tetraedri incastrati: una stella a otto punte.
+        const a = new THREE.TetrahedronGeometry(1, 0);
+        return [make(a), make(a.clone().scale(-1, -1, -1))];
+      }
+    }
+  }, [kind]);
+  useEffect(
+    () => () =>
+      parts.forEach((p) => {
+        p.faces.dispose();
+        p.edges.dispose();
+      }),
+    [parts],
+  );
+  return parts;
 }
 
-function FloatingShape({ shared, index }: { shared: Shared; index: number }) {
-  const s = shapes[index];
+function useRingGeometry() {
+  const geometry = useMemo(() => {
+    const pts: THREE.Vector3[] = [];
+    for (let i = 0; i < 128; i++) {
+      const a = (i / 128) * Math.PI * 2;
+      pts.push(new THREE.Vector3(Math.cos(a) * RING_RADIUS, Math.sin(a) * RING_RADIUS, 0));
+    }
+    return new THREE.BufferGeometry().setFromPoints(pts);
+  }, []);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  return geometry;
+}
+
+function FloatingShape({ shared, spec, index, dim }: { shared: Shared; spec: ShapeSpec; index: number; dim: boolean }) {
   const group = useRef<THREE.Group>(null);
-  const inner = useRef<THREE.Mesh>(null);
+  const body = useRef<THREE.Group>(null);
+  const ring = useRef<THREE.LineLoop>(null);
+  const parts = useShapeParts(spec.kind);
+  const ringGeometry = useRingGeometry();
+  // L'anello è tratteggiato: serve la lunghezza progressiva della linea.
+  useEffect(() => {
+    ring.current?.computeLineDistances();
+  }, [ringGeometry]);
 
   useFrame((state, delta) => {
     const g = group.current;
     if (!g) return;
     const t = state.clock.elapsedTime;
-    if (shared.animate) {
-      g.rotation.x += delta * s.speed;
-      g.rotation.y += delta * s.speed * 1.3;
-      g.position.y = s.pos[1] + Math.sin(t * 0.6 + index) * 0.5;
-    }
-    // Le forme si girano leggermente verso il puntatore.
-    g.rotation.z += (shared.pointer.x * 0.5 - g.rotation.z) * 0.03;
-    // Sempre sul bordo dello schermo, qualunque sia la larghezza: così non coprono i testi.
     const cam = state.camera as THREE.PerspectiveCamera;
-    const halfWidth = (cam.position.z - s.pos[2]) * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * cam.aspect;
-    const edgeX = Math.sign(s.pos[0]) * Math.max(6, halfWidth * (cam.aspect > 1.2 ? 1.12 : 0.9));
-    g.position.x += (edgeX + shared.pointer.x * 0.8 - g.position.x) * 0.04;
-    if (inner.current) inner.current.rotation.y -= delta * s.speed * 2;
+
+    // Quanto spazio c'è tra il bordo dello schermo e il testo, in pixel...
+    const W = state.size.width;
+    const margin = W >= CONTENT_WIDTH ? (W - CONTENT_WIDTH) / 2 + 32 : W >= 640 ? 32 : 20;
+    const narrow = W < 640;
+    const radiusPx = clamp(margin * 0.85, 34, 120) * spec.size;
+    // ...e dove mettere il centro: nel margine se c'è posto, a cavallo del bordo sui telefoni.
+    const centerPx = narrow ? margin - radiusPx * 0.55 : Math.min(margin / 2, margin - radiusPx - 10);
+
+    // Conversione da pixel a unità della scena, alla profondità della forma.
+    const halfW = (cam.position.z - spec.z) * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * cam.aspect;
+    const unit = (2 * halfW) / W;
+    const scale = (radiusPx * unit) / (spec.ring ? RING_RADIUS : 1);
+    const x = cam.position.x * 0.7 + spec.side * (halfW - centerPx * unit) + shared.pointer.x * scale * 0.15;
+
+    g.position.x += (x - g.position.x) * 0.08;
+    g.scale.setScalar(g.scale.x + (scale - g.scale.x) * 0.08);
+    g.position.y = spec.y + (shared.animate ? Math.sin(t * 0.5 + index) * 0.4 : 0);
+
+    if (shared.animate && body.current) {
+      body.current.rotation.x += delta * spec.speed;
+      body.current.rotation.y += delta * spec.speed * 1.4;
+    }
+    if (shared.animate && ring.current) ring.current.rotation.z += delta * spec.speed * 0.8;
+    // La forma si inclina appena verso il puntatore.
+    g.rotation.z += (shared.pointer.x * 0.25 - g.rotation.z) * 0.03;
   });
 
+  const o = dim ? 0.6 : 1;
   return (
-    <group ref={group} position={s.pos} scale={s.scale}>
-      <mesh>
-        <Geometry kind={s.kind} />
-        <meshBasicMaterial color={s.color} wireframe transparent opacity={0.24} blending={THREE.AdditiveBlending} depthWrite={false} />
-      </mesh>
-      <mesh ref={inner} scale={0.55}>
-        <Geometry kind={s.kind} />
-        <meshBasicMaterial color={s.color} transparent opacity={0.08} blending={THREE.AdditiveBlending} depthWrite={false} />
-      </mesh>
-      <points scale={1.001}>
-        <Geometry kind={s.kind} />
-        <pointsMaterial color={s.color} size={0.06} transparent opacity={0.9} blending={THREE.AdditiveBlending} depthWrite={false} />
-      </points>
+    <group ref={group} position={[spec.side * 20, spec.y, spec.z]}>
+      <group ref={body}>
+        {parts.map((p, i) => (
+          <group key={i}>
+            <lineSegments geometry={p.edges}>
+              <lineBasicMaterial color={spec.color} transparent opacity={0.55 * o} blending={THREE.AdditiveBlending} depthWrite={false} />
+            </lineSegments>
+            <mesh geometry={p.faces}>
+              <meshBasicMaterial color={spec.color} transparent opacity={0.045 * o} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} depthWrite={false} />
+            </mesh>
+            <points geometry={p.edges}>
+              <pointsMaterial color={spec.color} size={0.07} transparent opacity={0.85 * o} blending={THREE.AdditiveBlending} depthWrite={false} />
+            </points>
+          </group>
+        ))}
+      </group>
+      {spec.ring && (
+        <group rotation={[1.15, 0.25, 0]}>
+          <lineLoop ref={ring} geometry={ringGeometry}>
+            <lineDashedMaterial color={spec.color} transparent opacity={0.35 * o} dashSize={0.18} gapSize={0.12} blending={THREE.AdditiveBlending} depthWrite={false} />
+          </lineLoop>
+        </group>
+      )}
     </group>
   );
 }
@@ -415,8 +496,8 @@ export default function Scene3D() {
         <CameraRig shared={shared} />
         <Waves shared={shared} cols={small ? 90 : 140} rows={small ? 50 : 70} />
         <Dust shared={shared} count={small ? 1100 : 2600} />
-        {shapes.map((_, i) => (
-          <FloatingShape key={i} shared={shared} index={i} />
+        {shapes.map((spec, i) => (
+          <FloatingShape key={i} shared={shared} spec={spec} index={i} dim={small} />
         ))}
       </Canvas>
     </div>

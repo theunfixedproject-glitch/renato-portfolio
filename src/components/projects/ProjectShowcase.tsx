@@ -75,7 +75,7 @@ export function ProjectShowcase({ project, index }: { project: Project; index: n
             >
               {project.gallery.map((shot, i) => (
                 <figure key={shot.src} className="w-[62%] shrink-0 snap-start sm:w-[220px]">
-                  <PhoneFrame src={shot.src} alt={shot.alt} sizes="260px" priority={index === 0 && i < 2} />
+                  <PhoneFrame src={shot.src} alt={shot.alt} sizes="260px" priority={index === 0 && i < 2} aspect={project.shotAspect} />
                   <figcaption className="mt-3 text-xs leading-snug text-mist">{shot.alt.replace(`${project.name}: `, "")}</figcaption>
                 </figure>
               ))}
