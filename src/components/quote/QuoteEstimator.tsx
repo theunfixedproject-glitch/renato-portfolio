@@ -6,6 +6,7 @@ import { MULTI_SERVICE_LABEL, PREFILL_EVENT, type PrefillDetail } from "@/lib/ev
 import { profile, quoteTypes, quoteUrgency, type QuoteExtra } from "@/lib/data";
 import { availableExtras, estimateQuote, formatEuro, quoteSummary, sizeFor, type QuoteInput } from "@/lib/quote";
 import { AnimatedNumber } from "../ui/AnimatedNumber";
+import { EcosystemGraph } from "./EcosystemGraph";
 import { ArrowIcon, CheckIcon, WhatsAppIcon } from "../ui/Icons";
 import { SectionHeading } from "../ui/SectionHeading";
 import { BeamBorder } from "../ui/BeamBorder";
@@ -239,6 +240,18 @@ export function QuoteEstimator() {
             </p>
           </div>
         </aside>
+      </div>
+
+      <div className="mt-20 md:mt-28">
+        <p className="eyebrow">il tuo ecosistema</p>
+        <h3 className="mt-4 max-w-3xl font-display text-3xl leading-tight font-bold text-balance md:text-5xl">
+          Ecco cosa stai <span className="text-gradient">costruendo.</span>
+        </h3>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-mist">
+          Ogni scelta qui sopra aggiunge un pezzo: i servizi, quello che contengono, gli extra e i canali da cui arriveranno i
+          tuoi clienti. Tocca un nodo per vedere a cosa serve e quanto costa.
+        </p>
+        <EcosystemGraph input={input} result={result} />
       </div>
     </section>
   );
