@@ -50,32 +50,32 @@ const BASES: { id: string; label: string; desc: string; for: string[] }[] = [
   { id: "contatti", label: "Modulo contatti", desc: "Le richieste dei clienti arrivano dritte nella tua casella.", for: ["landing", "vetrina"] },
   { id: "catalogo", label: "Catalogo prodotti", desc: "Schede, foto, varianti e prezzi, ordinati in categorie.", for: ["ecommerce"] },
   { id: "checkout", label: "Carrello e checkout", desc: "Dal carrello al pagamento in pochi passi, anche da telefono.", for: ["ecommerce"] },
-  { id: "database", label: "Database", desc: "Dove vivono dati, utenti e contenuti, sempre sincronizzati.", for: ["webapp", "app"] },
+  { id: "database", label: "Database", desc: "Dove vivono dati, utenti e contenuti, sempre aggiornati su ogni dispositivo.", for: ["webapp", "app"] },
   { id: "risposte", label: "Risposte automatiche", desc: "Il bot risponde alle domande frequenti al posto tuo, a ogni ora.", for: ["bot"] },
-  { id: "formati", label: "Formati social", desc: "Verticale per Reel e TikTok, orizzontale per sito e YouTube.", for: ["video"] },
+  { id: "formati", label: "Formati social", desc: "In verticale per Reel e TikTok, in orizzontale per il sito e YouTube.", for: ["video"] },
 ];
 
 /** Come appare ogni extra sulla mappa, e a cosa si aggancia oltre ai servizi. */
 const FEATURES: Record<string, { label: string; desc: string; attach?: [service: string, base: string]; channel?: string }> = {
   quote: { label: "Preventivatore online", desc: "I clienti vedono subito costi e tempi, e ti contattano con le idee già chiare. Come questo." },
-  design: { label: "Logo e identità", desc: "Nome, logo, colori e stile: il volto di tutto quello che costruisci." },
-  seo: { label: "SEO e Google Business", desc: "Ottimizzazione per salire su Google e scheda della tua attività su Maps.", channel: "google" },
+  design: { label: "Logo e identità", desc: "Logo, colori e stile: il volto riconoscibile di tutto quello che costruisci." },
+  seo: { label: "SEO e Google Business", desc: "Il sito sale nelle ricerche di Google e la tua attività compare su Maps, con orari e recensioni.", channel: "google" },
   cms: { label: "Pannello contenuti", desc: "Cambi testi, foto e prezzi da solo, senza chiamare nessuno." },
   booking: { label: "Prenotazioni", desc: "Appuntamenti e prenotazioni online, con il calendario sempre aggiornato." },
   auth: { label: "Area clienti", desc: "Ogni cliente ha il suo accesso: ordini, documenti, storico." },
-  pay: { label: "Pagamenti online", desc: "Carta, wallet e bonifici, incassati direttamente." },
+  pay: { label: "Pagamenti online", desc: "Carte, Apple Pay, Google Pay e bonifici: incassi direttamente online." },
   shipping: { label: "Spedizioni", desc: "Etichette, corrieri e tracciamento degli ordini.", attach: ["ecommerce", "checkout"] },
-  dashboard: { label: "Statistiche", desc: "Vendite, visite e clienti in un colpo d'occhio." },
-  push: { label: "Notifiche push", desc: "Messaggi che arrivano sul telefono dei tuoi clienti." },
+  dashboard: { label: "Statistiche", desc: "Vendite, visite e clienti a colpo d'occhio, per decidere con i numeri." },
+  push: { label: "Notifiche push", desc: "Offerte e promemoria che arrivano direttamente sul telefono dei tuoi clienti." },
   stores: { label: "Pubblicazione sugli store", desc: "L'app su Play Store e App Store, pronta da scaricare.", channel: "store" },
   ai: { label: "Intelligenza artificiale", desc: "Il bot capisce le domande e risponde con parole sue, non solo con risposte fisse.", attach: ["bot", "risposte"] },
   integrations: { label: "CRM e gestionale", desc: "Il sito parla con gli strumenti che usi già: calendario, CRM, gestionale." },
-  lang: { label: "Più lingue", desc: "Lo stesso progetto in più lingue, per i clienti che arrivano da fuori." },
-  maintenance: { label: "Manutenzione 12 mesi", desc: "Aggiornamenti, sicurezza e piccole modifiche per un anno." },
+  lang: { label: "Più lingue", desc: "Lo stesso progetto in più lingue, per i clienti e i turisti che arrivano da fuori." },
+  maintenance: { label: "Manutenzione 12 mesi", desc: "Aggiornamenti, sicurezza e piccole modifiche per un anno: non ci pensi tu." },
   "promo-video": { label: "Video di lancio", desc: "Uno spot generato con l'AI per presentare il progetto sui social.", channel: "social" },
-  voice: { label: "Voce narrante", desc: "Una voce che racconta lo spot." },
-  subs: { label: "Sottotitoli e inglese", desc: "Lo spot si capisce anche senza audio, e in inglese." },
-  music: { label: "Musica originale", desc: "Una colonna sonora fatta su misura." },
+  voice: { label: "Voce narrante", desc: "Una voce professionale che racconta lo spot." },
+  subs: { label: "Sottotitoli e inglese", desc: "Lo spot si capisce anche senza audio, e arriva anche a chi parla inglese." },
+  music: { label: "Musica originale", desc: "Una colonna sonora creata su misura, solo per il tuo spot." },
 };
 
 function channelsFor(input: QuoteInput) {
@@ -98,9 +98,9 @@ function channelsFor(input: QuoteInput) {
       desc: extra("stores") ? "I clienti scaricano l'app dagli store ufficiali." : "I clienti installano l'app con un link, senza passare dagli store.",
       services: ["app"],
     });
-  if (has("bot")) list.push({ id: "chat", label: "WhatsApp e Telegram", desc: "Dove i tuoi clienti scrivono già ogni giorno.", services: ["bot"] });
+  if (has("bot")) list.push({ id: "chat", label: "WhatsApp e Telegram", desc: "Dove i tuoi clienti scrivono già ogni giorno: il bot risponde lì.", services: ["bot"] });
   if (has("video") || extra("promo-video"))
-    list.push({ id: "social", label: "Social", desc: "Instagram, TikTok e Facebook: dove i video portano persone.", services: has("video") ? ["video"] : [] });
+    list.push({ id: "social", label: "Social", desc: "Instagram, TikTok e Facebook: dove i video fanno conoscere la tua attività.", services: has("video") ? ["video"] : [] });
   return list;
 }
 
@@ -118,7 +118,9 @@ export function buildEcosystem(input: QuoteInput, result: QuoteResult | null): E
     label: "La tua attività",
     icon: "core",
     title: "La tua attività",
-    desc: result ? "Tutto il resto lavora per portarti clienti e richieste qui." : "Scegli un servizio qui sopra: l'ecosistema prende forma intorno a te.",
+    desc: result
+      ? "Qui arrivano clienti, richieste e ordini: tutto quello che vedi intorno lavora per questo."
+      : "Scegli un servizio qui sopra: l'ecosistema prende forma intorno a te.",
     price: result ? `${thousands(result.min)}–${thousands(result.max)} €` : undefined,
     sub: result ? `${result.weeksMin}–${result.weeksMax} settimane` : undefined,
   });

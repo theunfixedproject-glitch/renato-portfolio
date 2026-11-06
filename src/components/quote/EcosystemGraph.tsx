@@ -5,7 +5,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { createPortal } from "react-dom";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { CloseIcon } from "@/components/ui/Icons";
-import { quoteUrgency } from "@/lib/data";
 import { buildEcosystem, type EcoKind, type EcoNode } from "@/lib/ecosystem";
 import type { QuoteInput, QuoteResult } from "@/lib/quote";
 import { EcoIcon } from "./ecoIcons";
@@ -30,12 +29,21 @@ const RGB: Record<EcoKind, string> = {
 };
 
 const KIND_LABEL: Record<EcoKind, string> = {
-  core: "Il centro",
+  core: "Il centro di tutto",
   service: "Servizio",
-  base: "Compreso nel prezzo",
+  base: "Già compreso nel prezzo",
   feature: "Extra",
-  channel: "Da qui arrivano i clienti",
+  channel: "Canale · da qui arrivano i clienti",
 };
+
+const PRICE_LABEL: Partial<Record<EcoKind, string>> = { core: "stima totale", service: "prezzo indicativo", feature: "costo dell'extra" };
+
+const LEGEND = [
+  ["service", "Servizi"],
+  ["base", "Già compresi"],
+  ["feature", "Extra"],
+  ["channel", "Canali"],
+] as const;
 
 const SPEED: Record<string, number> = { relaxed: 0.7, normal: 1, rush: 1.7 };
 /** Punti con cui si disegna ogni collegamento. */
@@ -71,6 +79,7 @@ export function EcosystemGraph({ input, result }: { input: QuoteInput; result: Q
   const sprites = useRef<Partial<Record<EcoKind, HTMLCanvasElement>>>({});
   const buf = useRef(new Float32Array(N * 2));
   const kick = useRef<() => void>(() => {});
+  const mono = useRef("monospace");
 
   const [hover, setHover] = useState<string | null>(null);
   const [pinned, setPinned] = useState<string | null>(null);
@@ -377,6 +386,35 @@ export function EcosystemGraph({ input, result }: { input: QuoteInput; result: Q
           ctx.stroke();
         }
       }
+
+      // per ultime, così linee e comete non ci passano sopra
+      if (g.mode === "spine") {
+        // le didascalie dei gruppi: un'etichetta sulla linea, come il nome di una fermata
+        ctx.font = `500 9.5px ${mono.current}`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        for (const c of g.captions) {
+          const text = c.text.toUpperCase();
+          const tw = ctx.measureText(text).width + text.length * 1.2;
+          ctx.strokeStyle = "rgba(255,255,255,0.07)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(20, c.y);
+          ctx.lineTo(w - 20, c.y);
+          ctx.stroke();
+          ctx.fillStyle = "#0b0a12";
+          ctx.strokeStyle = "rgba(255,255,255,0.12)";
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(g.cx - tw / 2 - 12, c.y - 10, tw + 24, 20, 10);
+          else ctx.rect(g.cx - tw / 2 - 12, c.y - 10, tw + 24, 20);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "rgba(163,163,181,0.9)";
+          if ("letterSpacing" in ctx) ctx.letterSpacing = "1.2px";
+          ctx.fillText(text, g.cx, c.y + 0.5);
+          if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+        }
+      }
     },
     [route],
   );
@@ -385,6 +423,7 @@ export function EcosystemGraph({ input, result }: { input: QuoteInput; result: Q
 
   useEffect(() => {
     reduced.current = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    mono.current = getComputedStyle(document.documentElement).getPropertyValue("--font-fira").trim() || "monospace";
     for (const k of Object.keys(RGB) as EcoKind[]) {
       const c = document.createElement("canvas");
       c.width = c.height = 32;
@@ -506,15 +545,16 @@ export function EcosystemGraph({ input, result }: { input: QuoteInput; result: Q
     let line: LogLine | null = null;
     if (added.length) {
       const lead = added.find((n) => n.kind === "service") ?? added.find((n) => n.kind === "feature") ?? added[0];
-      const to = eco.edges.filter((e) => e.from === lead.id).map((e) => byId.get(e.to)?.label);
+      const to = eco.edges.filter((e) => e.from === lead.id).map((e) => (e.to === "core" ? "core" : byId.get(e.to)?.label));
+      const everywhere = to.length === 1 && to[0] === "core";
       line = {
         id: performance.now(),
         sign: "+",
         text: lead.label,
-        more: added.length > 1 ? `e altri ${added.length - 1} pezzi collegati` : to.length ? `si collega a ${to.join(", ")}` : undefined,
+        more: added.length > 1 ? `e altri ${added.length - 1} pezzi collegati` : everywhere ? "vale per tutto il progetto" : to.length ? `si collega a ${to.map((t) => (t === "core" ? "la tua attività" : t)).join(", ")}` : "aggiunto alla mappa",
       };
     } else if (removed.length) {
-      line = { id: performance.now(), sign: "−", text: removed[0][1], more: removed.length > 1 ? `e altri ${removed.length - 1} pezzi` : undefined };
+      line = { id: performance.now(), sign: "−", text: removed[0][1], more: removed.length > 1 ? `tolto, insieme ad altri ${removed.length - 1} pezzi` : "tolto dalla mappa" };
     }
     if (line) setLog(line);
   }, [eco, byId]);
@@ -560,27 +600,20 @@ export function EcosystemGraph({ input, result }: { input: QuoteInput; result: Q
 
   const activeNode = current ? byId.get(current) : null;
   const sheetNode = pinned ? byId.get(pinned) : null;
-  const urgency = quoteUrgency.find((u) => u.id === input.urgencyId);
 
   return (
     <div className="mt-8">
-      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[11px] text-mist">
-        {(
-          [
-            ["service", "Servizi", eco.counts.service],
-            ["base", "Compresi", eco.counts.base],
-            ["feature", "Extra", eco.counts.feature],
-            ["channel", "Canali", eco.counts.channel],
-          ] as const
-        ).map(([k, label, n]) => (
-          <span key={k} className="inline-flex items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2 font-mono text-[11px] text-mist">
+        {LEGEND.map(([k, label]) => (
+          <span key={k} className="inline-flex items-center gap-2 rounded-full border border-line bg-coal/70 py-1.5 pr-3 pl-2.5">
             <i className="size-2 rounded-full" style={{ background: `rgb(${RGB[k]})`, boxShadow: `0 0 10px rgb(${RGB[k]})` }} aria-hidden />
-            {label} <b className="font-medium text-snow tabular-nums">{n}</b>
+            {label}
+            <b className="font-medium text-snow tabular-nums">{eco.counts[k]}</b>
           </span>
         ))}
-        {urgency && !eco.empty && (
-          <span className="ml-auto inline-flex items-center gap-2 rounded-full border border-line px-3 py-1">
-            <i className="size-1.5 rounded-full bg-cyber motion-safe:animate-pulse" aria-hidden /> flusso: {urgency.label.toLowerCase()}
+        {!eco.empty && (
+          <span className="ml-auto hidden text-mist/80 sm:inline">
+            {eco.nodes.length - 1} pezzi · {eco.edges.length} collegamenti
           </span>
         )}
       </div>
@@ -604,9 +637,16 @@ export function EcosystemGraph({ input, result }: { input: QuoteInput; result: Q
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(4,4,6,0.75))]" />
 
         {mode === "orbit" && (
-          <p aria-hidden className="pointer-events-none absolute top-5 left-6 flex items-center gap-2 font-mono text-[10px] tracking-[0.25em] text-mist/70 uppercase">
-            <i className="size-1.5 rounded-full bg-cyber shadow-[0_0_8px_var(--color-cyber)] motion-safe:animate-pulse" /> mappa dal vivo
-          </p>
+          <>
+            <p aria-hidden className="pointer-events-none absolute top-5 left-6 hidden items-center gap-2 font-mono text-[10px] tracking-[0.25em] text-mist/70 uppercase md:flex">
+              <i className="size-1.5 rounded-full bg-cyber shadow-[0_0_8px_var(--color-cyber)] motion-safe:animate-pulse" /> si aggiorna mentre scegli
+            </p>
+            {!eco.empty && (
+              <p aria-hidden className="pointer-events-none absolute bottom-5 left-6 hidden font-mono text-[10px] tracking-[0.12em] text-mist/60 md:block">
+                dal centro verso l&apos;esterno: servizi → pezzi ed extra → canali
+              </p>
+            )}
+          </>
         )}
 
         <AnimatePresence>
@@ -651,29 +691,37 @@ export function EcosystemGraph({ input, result }: { input: QuoteInput; result: Q
 
         {eco.empty && (
           <p className="pointer-events-none absolute inset-x-0 bottom-10 px-6 text-center font-mono text-xs text-mist">
-            Scegli un servizio qui sopra: l&apos;ecosistema si costruisce da solo.
+            Scegli un servizio qui sopra: l&apos;ecosistema prende forma intorno alla tua attività.
           </p>
         )}
       </div>
 
-      <div className="mt-3 flex min-h-6 items-start gap-2 font-mono text-[11px] leading-relaxed text-mist" aria-live="polite">
-        <span className="text-violet-soft" aria-hidden>
-          ›
-        </span>
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.span key={log?.id ?? "idle"} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-            {log ? (
-              <>
-                <b className={`font-medium ${log.sign === "+" ? "text-cyber" : "text-[#ff7a9a]"}`}>
-                  {log.sign} {log.text}
-                </b>
-                {log.more && <span> · {log.more}</span>}
-              </>
-            ) : (
-              "Aggiungi o togli qualcosa qui sopra: la mappa si aggiorna da sola."
-            )}
-          </motion.span>
-        </AnimatePresence>
+      <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-10">
+        <div className="flex min-h-6 items-start gap-2 font-mono text-[11px] leading-relaxed text-mist" aria-live="polite">
+          <span className="text-violet-soft" aria-hidden>
+            ›
+          </span>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span key={log?.id ?? "idle"} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+              {log ? (
+                <>
+                  <b className={`font-medium ${log.sign === "+" ? "text-cyber" : "text-[#ff7a9a]"}`}>
+                    {log.sign} {log.text}
+                  </b>
+                  {log.more && <span> · {log.more}</span>}
+                </>
+              ) : (
+                "Aggiungi o togli qualcosa qui sopra: la mappa si aggiorna da sola."
+              )}
+            </motion.span>
+          </AnimatePresence>
+        </div>
+        {!eco.empty && (
+          <p className="max-w-md text-[13px] leading-relaxed text-mist md:text-right">
+            Le luci che scorrono sono i tuoi clienti: partono dai canali, passano dai servizi e arrivano alla tua attività.
+            {input.urgencyId === "rush" && " Con i tempi urgenti corrono più veloci."}
+          </p>
+        )}
       </div>
 
       <ul className="sr-only">
@@ -718,7 +766,10 @@ function Detail({ node, eco, byId, onClose }: { node: EcoNode; eco: ReturnType<t
     .map((e) => byId.get(e.from === node.id ? e.to : e.from))
     .filter((n): n is EcoNode => !!n);
   return (
-    <div className={`${onClose ? "pointer-events-auto" : ""} rounded-2xl border border-line bg-coal/95 p-4 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.95)] backdrop-blur-xl`}>
+    <div
+      className={`${onClose ? "pointer-events-auto" : ""} relative overflow-hidden rounded-2xl border border-line bg-coal/95 p-4 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.95)] backdrop-blur-xl`}
+    >
+      <span aria-hidden className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />
       <div className="flex items-start gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-xl" style={{ background: `rgba(${RGB[node.kind]},0.12)`, color, boxShadow: `inset 0 0 0 1px rgba(${RGB[node.kind]},0.3)` }}>
           <EcoIcon name={node.kind === "core" ? "ai" : node.icon} size={17} />
@@ -728,7 +779,7 @@ function Detail({ node, eco, byId, onClose }: { node: EcoNode; eco: ReturnType<t
             {KIND_LABEL[node.kind]}
           </p>
           <p className="mt-0.5 font-display text-lg leading-tight font-bold">{node.title}</p>
-          {node.sub && node.kind !== "core" && <p className="mt-0.5 font-mono text-[11px] text-mist">{node.sub}</p>}
+          {node.sub && node.kind !== "core" && <p className="mt-0.5 font-mono text-[11px] text-violet-soft">{node.sub}</p>}
         </div>
         {onClose && (
           <button type="button" onClick={onClose} aria-label="Chiudi" className="-mt-1 -mr-1 grid size-9 shrink-0 place-items-center rounded-full text-mist hover:text-snow">
@@ -737,20 +788,40 @@ function Detail({ node, eco, byId, onClose }: { node: EcoNode; eco: ReturnType<t
         )}
       </div>
       <p className="mt-2.5 text-[13px] leading-snug text-mist">{node.desc}</p>
-      {node.price && (
-        <p className="mt-3 flex items-baseline justify-between border-t border-line pt-2.5 font-mono text-[12px]">
-          <span className="text-mist">{node.kind === "core" ? `stima totale · ${node.sub ?? ""}` : "costo"}</span>
-          <span className="text-snow">{node.price}</span>
-        </p>
+      {(node.price || node.kind === "core") && node.kind !== "channel" && (
+        <dl className="mt-3 space-y-1 border-t border-line pt-2.5 font-mono text-[12px]">
+          {node.kind === "base" ? (
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-mist">costo</dt>
+              <dd className="text-cyber">già compreso</dd>
+            </div>
+          ) : (
+            node.price && (
+              <div className="flex items-baseline justify-between gap-3">
+                <dt className="text-mist">{PRICE_LABEL[node.kind]}</dt>
+                <dd className="text-snow">{node.price}</dd>
+              </div>
+            )
+          )}
+          {node.kind === "core" && node.sub && (
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-mist">tempi</dt>
+              <dd className="text-cyber">{node.sub}</dd>
+            </div>
+          )}
+        </dl>
       )}
       {neighbours.length > 0 && (
-        <div className="mt-2.5 flex flex-wrap gap-1.5">
-          {neighbours.map((m) => (
-            <span key={m.id} className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-[10.5px] text-mist">
-              <i className="size-1.5 rounded-full" style={{ background: `rgb(${RGB[m.kind]})` }} aria-hidden />
-              {m.label}
-            </span>
-          ))}
+        <div className="mt-3">
+          <p className="font-mono text-[10px] tracking-[0.15em] text-mist/70 uppercase">si collega a</p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {neighbours.map((m) => (
+              <span key={m.id} className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-[10.5px] text-mist">
+                <i className="size-1.5 rounded-full" style={{ background: `rgb(${RGB[m.kind]})` }} aria-hidden />
+                {m.label}
+              </span>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -760,7 +831,7 @@ function Detail({ node, eco, byId, onClose }: { node: EcoNode; eco: ReturnType<t
 /* ---------------- i nodi ---------------- */
 
 const CHIP_STYLE: Record<Exclude<EcoKind, "core" | "service">, string> = {
-  base: "border-white/10 bg-[#0e0e14] text-mist",
+  base: "border-white/15 bg-[#101017] text-[#c9c9d6]",
   feature: "border-cyber/40 bg-[#09140f] text-snow",
   channel: "border-[rgba(95,208,255,0.45)] bg-[#09111a] text-snow",
 };
@@ -857,6 +928,7 @@ function NodeChip({
         <span className="min-w-0">
           <span className="block font-display text-[13.5px] leading-tight font-bold sm:text-[15px]">{node.label}</span>
           {node.sub && <span className="mt-0.5 block font-mono text-[9.5px] text-violet-soft sm:text-[10px]">{node.sub}</span>}
+          {node.price && <span className="mt-1 block font-mono text-[10.5px] text-snow/85 tabular-nums sm:text-[11px]">{node.price}</span>}
         </span>
       </motion.button>
     );
@@ -869,7 +941,7 @@ function NodeChip({
       style={{ boxShadow: selected ? `0 0 0 2px ${color}, 0 0 24px -4px ${color}` : undefined }}
     >
       <EcoIcon name={node.icon} size={13} className="shrink-0" style={{ color }} />
-      <span className="text-[11px] leading-tight font-medium sm:text-[12px]">{node.label}</span>
+      <span className="text-[12px] leading-tight font-medium">{node.label}</span>
     </motion.button>
   );
 }

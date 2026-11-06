@@ -14,9 +14,11 @@ export type Size = { hw: number; hh: number };
 export type Pt = { x: number; y: number };
 export type Sector = { id: string; a0: number; a1: number };
 export type Zone = { id: string; y0: number; y1: number };
+/** Didascalia di un gruppo nella vista telefono. */
+export type Caption = { text: string; y: number };
 export type Geometry =
   | { mode: "orbit"; w: number; h: number; cx: number; cy: number; ax: number; ay: number; rings: number[]; sectors: Sector[] }
-  | { mode: "spine"; w: number; h: number; cx: number; cy: number; spineEnd: number; zones: Zone[] };
+  | { mode: "spine"; w: number; h: number; cx: number; cy: number; spineEnd: number; zones: Zone[]; captions: Caption[] };
 export type Layout = { geo: Geometry; targets: Map<string, Pt> };
 
 export const ORBIT_MIN_WIDTH = 720;
@@ -252,10 +254,11 @@ function spine(eco: Ecosystem, S: (id: string) => Size, w: number): Layout {
   const cx = w / 2;
   const targets = new Map<string, Pt>();
   const zones: Zone[] = [];
+  const captions: Caption[] = [];
   const core = S("core");
   if (!services.length) {
     targets.set("core", { x: cx, y: 170 });
-    return { geo: { mode: "spine", w, h: 400, cx, cy: 170, spineEnd: 170, zones }, targets };
+    return { geo: { mode: "spine", w, h: 400, cx, cy: 170, spineEnd: 170, zones, captions }, targets };
   }
   const cy = 18 + core.hh;
   targets.set("core", { x: cx, y: cy });
@@ -272,7 +275,12 @@ function spine(eco: Ecosystem, S: (id: string) => Size, w: number): Layout {
       y += rh * 2 + 10;
     }
   };
+  const caption = (text: string) => {
+    captions.push({ text, y: y + 8 });
+    y += 30;
+  };
   if (global.length) {
+    caption("per tutto il progetto");
     rows(ordered(global, up));
     y += 24;
   }
@@ -287,8 +295,11 @@ function spine(eco: Ecosystem, S: (id: string) => Size, w: number): Layout {
     zones.push({ id: s.id, y0, y1: y + 2 });
     y += 30;
   }
-  if (shared.length) rows(ordered(shared, up));
-  return { geo: { mode: "spine", w, h: Math.round(y + 8), cx, cy, spineEnd, zones }, targets };
+  if (shared.length) {
+    caption("in comune tra più servizi");
+    rows(ordered(shared, up));
+  }
+  return { geo: { mode: "spine", w, h: Math.round(y + 8), cx, cy, spineEnd, zones, captions }, targets };
 }
 
 export function layoutEcosystem(eco: Ecosystem, sizes: Map<string, Size>, w: number): Layout {

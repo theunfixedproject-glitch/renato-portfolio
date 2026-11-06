@@ -29,6 +29,7 @@ export function QuoteEstimator() {
     setInput((s) => ({ ...s, extras: s.extras.includes(id) ? s.extras.filter((e) => e !== id) : [...s.extras, id] }));
 
   const summary = result ? quoteSummary(input, result) : "";
+  const whatsappHref = `${profile.whatsappBase}?text=${encodeURIComponent(`Ciao Renato, ho fatto una stima sul tuo sito:\n${summary}`)}`;
 
   const sendToForm = () => {
     if (!result) return;
@@ -223,7 +224,7 @@ export function QuoteEstimator() {
                     <ArrowIcon width={16} height={16} className="shrink-0 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                   </button>
                   <a
-                    href={`${profile.whatsappBase}?text=${encodeURIComponent(`Ciao Renato, ho fatto una stima sul tuo sito:\n${summary}`)}`}
+                    href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex w-full items-center justify-center gap-2 rounded-full bg-whatsapp px-6 py-4 text-base font-semibold text-ink transition-shadow hover:shadow-[0_0_40px_-6px_var(--color-whatsapp)]"
@@ -248,10 +249,41 @@ export function QuoteEstimator() {
           Ecco cosa stai <span className="text-gradient">costruendo.</span>
         </h3>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-mist">
-          Ogni scelta qui sopra aggiunge un pezzo: i servizi, quello che contengono, gli extra e i canali da cui arriveranno i
-          tuoi clienti. Tocca un nodo per vedere a cosa serve e quanto costa.
+          Ogni scelta qui sopra aggiunge un pezzo alla mappa: al centro c&apos;è la tua attività, intorno i servizi, quello che è
+          già compreso, gli extra e i canali da cui arriveranno i clienti. Tocca un nodo per sapere a cosa serve e quanto costa.
         </p>
         <EcosystemGraph input={input} result={result} />
+
+        {result && (
+          <div className="relative mt-10 flex flex-col gap-5 overflow-hidden rounded-3xl border border-violet/25 bg-gradient-to-br from-violet/15 via-coal to-coal p-6 md:flex-row md:items-center md:justify-between md:p-8">
+            <div className="glow-green pointer-events-none absolute -right-24 -bottom-32 size-72 opacity-60" />
+            <div className="relative max-w-xl">
+              <p className="font-display text-2xl leading-tight font-bold text-balance md:text-3xl">È questo il progetto che hai in mente?</p>
+              <p className="mt-2 leading-relaxed text-mist">
+                Mandamelo così com&apos;è: lo guardiamo insieme, lo sistemiamo dove serve e ti preparo il preventivo definitivo,
+                gratis e senza impegno.
+              </p>
+            </div>
+            <div className="relative flex w-full flex-col gap-3 sm:flex-row md:w-auto md:shrink-0 md:flex-col lg:flex-row">
+              <button
+                type="button"
+                onClick={sendToForm}
+                className="group flex items-center justify-center gap-2 rounded-full bg-cyber px-6 py-4 font-mono text-sm font-medium whitespace-nowrap text-ink transition-shadow hover:shadow-[0_0_40px_-6px_var(--color-cyber)]"
+              >
+                Richiedi il preventivo
+                <ArrowIcon width={16} height={16} className="shrink-0 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+              </button>
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 rounded-full bg-whatsapp px-6 py-4 text-base font-semibold whitespace-nowrap text-ink transition-shadow hover:shadow-[0_0_40px_-6px_var(--color-whatsapp)]"
+              >
+                <WhatsAppIcon width={22} height={22} strokeWidth={2.2} /> Mandala su WhatsApp
+              </a>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
