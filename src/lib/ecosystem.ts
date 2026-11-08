@@ -52,6 +52,7 @@ const BASES: { id: string; label: string; desc: string; for: string[] }[] = [
   { id: "checkout", label: "Carrello e checkout", desc: "Dal carrello al pagamento in pochi passi, anche da telefono.", for: ["ecommerce"] },
   { id: "database", label: "Database", desc: "Dove vivono dati, utenti e contenuti, sempre aggiornati su ogni dispositivo.", for: ["webapp", "app"] },
   { id: "risposte", label: "Risposte automatiche", desc: "Il bot risponde alle domande frequenti al posto tuo, a ogni ora.", for: ["bot"] },
+  { id: "colonna", label: "Colonna sonora", desc: "La musica scritta apposta, a tempo con ogni movimento del film.", for: ["motion"] },
   { id: "formati", label: "Formati social", desc: "In verticale per Reel e TikTok, in orizzontale per il sito e YouTube.", for: ["video"] },
 ];
 
@@ -99,8 +100,9 @@ function channelsFor(input: QuoteInput) {
       services: ["app"],
     });
   if (has("bot")) list.push({ id: "chat", label: "WhatsApp e Telegram", desc: "Dove i tuoi clienti scrivono già ogni giorno: il bot risponde lì.", services: ["bot"] });
-  if (has("video") || extra("promo-video"))
-    list.push({ id: "social", label: "Social", desc: "Instagram, TikTok e Facebook: dove i video fanno conoscere la tua attività.", services: has("video") ? ["video"] : [] });
+  const films = ["video", "motion"].filter(has);
+  if (films.length || extra("promo-video"))
+    list.push({ id: "social", label: "Social", desc: "Instagram, TikTok e Facebook: dove i video fanno conoscere la tua attività.", services: films });
   return list;
 }
 

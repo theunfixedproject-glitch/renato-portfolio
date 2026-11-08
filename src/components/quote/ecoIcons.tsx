@@ -8,6 +8,8 @@ const PATHS: Record<string, string> = {
   app: "M7 3h10v18H7zM11 18h2",
   bot: "M12 4v4M7 8h10a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2zM9.5 13h.01M14.5 13h.01M10 16h4",
   video: "M3 5h18v14H3zM10 9l5 3-5 3z",
+  motion: "M3 18c4 0 5.5-11 9-11s5 11 9 11M12 3l2 2-2 2-2-2z",
+  colonna: "M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z",
   // compresi
   hosting: "M4 4h16v7H4zM4 13h16v7H4zM8 7.5h.01M8 16.5h.01",
   contatti: "M3 5h18v14H3zM3 7l9 6 9-6",
