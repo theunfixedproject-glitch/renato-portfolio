@@ -1,0 +1,12 @@
+# tutto quello che si rigenera: dipendenze, catture, fotogrammi di prova, render e audio
+node_modules/
+package-lock.json
+*.mp4
+*.wav
+*.log
+una-giornata/cap*/
+una-giornata/seg/
+una-giornata/fermi/
+una-giornata/st*/
+dentro-il-cursore/parts-*/
+dentro-il-cursore/fermi/

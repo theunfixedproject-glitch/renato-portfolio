@@ -34,6 +34,13 @@ const serviceIcons: Record<string, React.ReactNode> = {
       <path d="M12 3v4M9 12h.01M15 12h.01M9.5 15.5h5M2 12v3M22 12v3" />
     </>
   ),
+  motion: (
+    <>
+      <path d="M3 18c4 0 5.5-11 9-11s5 11 9 11" />
+      <path d="m12 3 2 2-2 2-2-2Z" />
+      <path d="M3 21h18" />
+    </>
+  ),
 };
 
 const steps = [
@@ -64,7 +71,7 @@ export function About() {
         }
       />
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-2 md:[&>*:last-child:nth-child(odd)]:col-span-2">
         {services.map((service, i) => (
           <Reveal key={service.id} delay={i * 0.1}>
             <Tilt className="h-full rounded-3xl">
@@ -122,6 +129,31 @@ export function About() {
                   <span>
                     <span className="block font-semibold">Guarda un esempio</span>
                     <span className="block text-sm text-mist">Lo spot per Tritabottega, in 15 secondi</span>
+                  </span>
+                  <ArrowIcon width={18} height={18} className="ml-auto shrink-0 text-cyber" />
+                </Link>
+              )}
+              {service.id === "motion" && (
+                <Link
+                  href="/lavori/graphic-motion"
+                  className="relative mt-6 flex items-center gap-4 rounded-2xl border border-line bg-ink/60 p-3 transition-colors hover:border-cyber"
+                >
+                  <span className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-xl border border-line bg-black">
+                    <video
+                      src="/video/dentro-il-cursore-loop.mp4"
+                      poster="/video/dentro-il-cursore-poster.jpg"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      aria-hidden
+                      className="h-full w-full object-cover"
+                    />
+                  </span>
+                  <span>
+                    <span className="block font-semibold">Guarda i film</span>
+                    <span className="block text-sm text-mist">Due esempi, fatti interamente in codice</span>
                   </span>
                   <ArrowIcon width={18} height={18} className="ml-auto shrink-0 text-cyber" />
                 </Link>

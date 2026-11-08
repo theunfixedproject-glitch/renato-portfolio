@@ -1,19 +1,50 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { ArrowIcon } from "../ui/Icons";
+
+/** I due film di graphic motion: fatti interamente in codice, anche la musica. */
+const FILMS = [
+  {
+    id: "dentro-il-cursore",
+    title: "Dentro il cursore",
+    length: "20 s",
+    text: "Uno zoom che non si ferma mai: ogni scena è nascosta in un dettaglio della precedente.",
+    src: "/video/dentro-il-cursore.mp4",
+    poster: "/video/dentro-il-cursore-poster.jpg",
+    aspect: "16/9",
+    label: "Video: un cursore lampeggiante, poi parole, forme, un telefono in 3D, i punteggi di Lighthouse e la rete del preventivatore, fino al nome Renato Manzotti.",
+  },
+  {
+    id: "una-giornata",
+    title: "Una giornata",
+    length: "15 s",
+    text: "Un volo sopra questo sito, dalla mattina alla notte.",
+    src: "/video/showreel.mp4",
+    poster: "/video/showreel-poster.jpg",
+    aspect: "5/4",
+    label: "Video: la camera vola sopra il sito di Renato Manzotti, dalla mattina alla notte, e chiude con la frase: Siti, app e bot che lavorano per te, anche quando dormi.",
+  },
+] as const;
 
 /**
- * Il film di 15 secondi: un volo sopra questo sito, dalla mattina alla notte.
- * Parte da solo e senza audio quando entra nello schermo; il suono si accende a richiesta.
+ * Parte da solo e senza audio quando entra nello schermo, si ferma quando esce.
+ * Il suono si accende a richiesta; chi preferisce meno movimento vede solo la copertina.
  */
 export function Showreel() {
   const video = useRef<HTMLVideoElement>(null);
+  const mutedRef = useRef(true);
+  const [film, setFilm] = useState(0);
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(false);
+  const current = FILMS[film];
 
+  // a ogni film il video è un elemento nuovo: riparte dall'inizio, con lo stesso stato dell'audio
   useEffect(() => {
     const v = video.current;
     if (!v) return;
+    v.muted = mutedRef.current;
     const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const io = new IntersectionObserver(
       ([e]) => {
@@ -24,12 +55,13 @@ export function Showreel() {
     );
     io.observe(v);
     return () => io.disconnect();
-  }, []);
+  }, [film]);
 
   const toggleSound = () => {
     const v = video.current;
     if (!v) return;
     v.muted = !v.muted;
+    mutedRef.current = v.muted;
     setMuted(v.muted);
     if (!v.muted) {
       v.currentTime = 0;
@@ -47,29 +79,58 @@ export function Showreel() {
     <section aria-labelledby="showreel-title" id="showreel" className="section !pt-4">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow">il mio lavoro in 15 secondi</p>
-          <h2 id="showreel-title" className="mt-3 font-display text-3xl leading-tight font-bold md:text-4xl">
-            Una giornata sopra questo sito. <span className="text-gradient">Fatta solo di codice.</span>
+          <p className="eyebrow">graphic motion · fatte in codice</p>
+          <h2 id="showreel-title" className="mt-3 max-w-3xl font-display text-3xl leading-tight font-bold md:text-4xl">
+            Film brevi per presentarti, <span className="text-gradient">scritti riga per riga.</span>
           </h2>
         </div>
         <p className="max-w-sm text-sm leading-relaxed text-mist">
-          Animazione, luce e musica sono scritte a mano in codice: nessun programma di montaggio.
+          Animazione, luce e musica sono scritte a mano in codice: nessun programma di montaggio, nessun modello già pronto.
         </p>
       </div>
 
-      <figure className="relative overflow-hidden rounded-[2rem] border border-line bg-ink">
+      <div role="tablist" aria-label="Scegli il film" className="mb-5 grid gap-3 sm:grid-cols-2">
+        {FILMS.map((f, i) => {
+          const on = i === film;
+          return (
+            <button
+              key={f.id}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              aria-controls="showreel-video"
+              onClick={() => setFilm(i)}
+              className={`flex min-h-16 items-start gap-3 rounded-2xl border p-4 text-left transition-colors ${
+                on ? "border-cyber bg-cyber/10" : "border-line bg-coal/70 hover:border-violet/60"
+              }`}
+            >
+              <span className={`mt-1 size-2.5 shrink-0 rounded-full ${on ? "bg-cyber" : "bg-line"}`} aria-hidden />
+              <span>
+                <span className="block font-display text-lg leading-tight font-bold">
+                  {f.title} <span className="font-mono text-xs font-normal text-mist">· {f.length}</span>
+                </span>
+                <span className="mt-1 block text-sm leading-snug text-mist">{f.text}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <figure id="showreel-video" className="relative overflow-hidden rounded-[2rem] border border-line bg-ink">
         <video
+          key={current.id}
           ref={video}
-          className="block aspect-[5/4] w-full object-cover"
-          src="/video/showreel.mp4"
-          poster="/video/showreel-poster.jpg"
+          className="block w-full object-cover"
+          style={{ aspectRatio: current.aspect }}
+          src={current.src}
+          poster={current.poster}
           muted
           loop
           playsInline
           preload="metadata"
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
-          aria-label="Video: la camera vola sopra il sito di Renato Manzotti, dalla mattina alla notte, e chiude con la frase: Siti, app e bot che lavorano per te, anche quando dormi."
+          aria-label={current.label}
         />
         <figcaption className="absolute right-4 bottom-4 left-4 flex flex-wrap items-center justify-end gap-2">
           <button
@@ -96,6 +157,14 @@ export function Showreel() {
           </button>
         </figcaption>
       </figure>
+
+      <Link
+        href="/lavori/graphic-motion"
+        className="mt-5 inline-flex items-center gap-2 font-mono text-sm text-cyber transition-colors hover:text-snow"
+      >
+        Come sono fatti, nei lavori personali
+        <ArrowIcon width={16} height={16} />
+      </Link>
     </section>
   );
 }

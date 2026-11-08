@@ -8,7 +8,7 @@ export function categorySummary(id: CategoryId): { count: number; label: string 
     return { count: count + makeovers.length, label: parts.join(" + ") };
   }
   if (count === 0) return { count, label: "In arrivo" };
-  const noun = id === "video-ai" ? (count === 1 ? "spot" : "spot") : count === 1 ? "progetto" : "progetti";
+  const noun = id === "video-ai" ? "spot" : id === "graphic-motion" ? "film" : count === 1 ? "progetto" : "progetti";
   return { count, label: `${count} ${noun}` };
 }
 

@@ -25,6 +25,14 @@ const paths: Record<CategoryId, React.ReactNode> = {
       <path d="m10 9 5 3-5 3Z" />
     </>
   ),
+  // una curva di movimento con un fotogramma chiave in cima
+  "graphic-motion": (
+    <>
+      <path d="M3 18c4 0 5.5-11 9-11s5 11 9 11" />
+      <path d="m12 3 2 2-2 2-2-2Z" />
+      <path d="M3 21h18" />
+    </>
+  ),
   "bot-dashboard": (
     <>
       <rect x="3" y="3" width="18" height="18" rx="3" />

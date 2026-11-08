@@ -33,7 +33,7 @@ export const navLinks = [
 /* Lavori personali, divisi per categoria                              */
 /* ------------------------------------------------------------------ */
 
-export type CategoryId = "applicazioni" | "videogiochi" | "siti-web" | "video-ai" | "bot-dashboard";
+export type CategoryId = "applicazioni" | "videogiochi" | "siti-web" | "video-ai" | "graphic-motion" | "bot-dashboard";
 
 export type Category = {
   id: CategoryId;
@@ -71,6 +71,14 @@ export const categories: Category[] = [
     tagline: "Spot per social, sito e vetrine",
     description: "Video promozionali generati con l'intelligenza artificiale: brevi, curati ed economici, pensati per le piccole e medie imprese.",
     accent: "violet",
+  },
+  {
+    id: "graphic-motion",
+    label: "Graphic motion",
+    tagline: "Film animati scritti in codice",
+    description:
+      "Brevi film animati per presentare un'attività: ogni movimento, ogni luce e anche la musica sono scritti in codice, senza modelli già pronti.",
+    accent: "green",
   },
   {
     id: "bot-dashboard",
@@ -122,6 +130,14 @@ export const services: Service[] = [
       "Spot da 15-30 secondi generati con l'intelligenza artificiale: il modo più economico per avere un video curato per social, sito e vetrine digitali.",
     outcomes: ["Pronti in pochi giorni", "Formati verticale e orizzontale", "Una frazione del costo di una troupe"],
   },
+  {
+    id: "motion",
+    title: "Graphic motion",
+    tag: "05 / motion",
+    description:
+      "Brevi film animati che presentano la tua attività, i tuoi prodotti o il tuo sito. Ogni movimento è disegnato su misura e va a tempo con la musica: niente modelli già visti.",
+    outcomes: ["Film da 15-30 secondi", "Musica sincronizzata con le immagini", "Formati per sito, social e presentazioni"],
+  },
 ];
 
 export type ProjectStatus = "in-sviluppo" | "online" | "realizzato";
@@ -154,7 +170,7 @@ export type Project = {
 export type ProjectVideo = {
   src: string;
   poster: string;
-  aspect: "16/9" | "9/16";
+  aspect: "16/9" | "9/16" | "5/4";
   title: string;
   caption: string;
 };
@@ -320,6 +336,44 @@ export const projects: Project[] = [
       { src: "/video/tritabottega-16x9.mp4", poster: "/video/tritabottega-16x9.webp", aspect: "16/9", title: "Lo spot finito", caption: "Orizzontale 16:9, per sito, YouTube e schermi" },
       { src: "/video/tritabottega-9x16.mp4", poster: "/video/tritabottega-9x16.webp", aspect: "9/16", title: "Versione verticale", caption: "9:16, per Reel, TikTok e Storie" },
       { src: "/video/tritabottega-grezzo.mp4", poster: "/video/tritabottega-grezzo.webp", aspect: "16/9", title: "Il girato AI, prima del montaggio", caption: "Le inquadrature generate dallo storyboard, senza testi né marchio" },
+    ],
+  },
+  {
+    id: "dentro-il-cursore",
+    category: "graphic-motion",
+    name: "Dentro il cursore",
+    kind: "Graphic motion · 20 secondi",
+    status: "realizzato",
+    tagline: "Uno showreel in cui ogni scena è nascosta dentro la precedente.",
+    description:
+      "Un cursore lampeggiante e uno zoom che non si ferma mai: si tuffa nel cursore e trova le parole, nella O di VIDEO e trova le forme, in un telefono 3D, nei punteggi di Lighthouse, nella rete del preventivatore, fino al nome che si cancella e torna cursore. Gira in loop senza stacchi. Ogni fotogramma è calcolato in codice, anche la musica, che va a tempo con le immagini.",
+    benefits: ["Nessun taglio: ogni scena nasce dalla precedente", "Musica scritta in codice, a tempo con le immagini", "Gira in loop, perfetto per schermi e vetrine", "1920×1080 a 60 fotogrammi al secondo"],
+    stack: ["Canvas 2D", "Web Audio API", "Playwright", "ffmpeg"],
+    accent: "green",
+    cover: "/video/dentro-il-cursore-poster.jpg",
+    orientation: "landscape",
+    gallery: [],
+    videos: [
+      { src: "/video/dentro-il-cursore.mp4", poster: "/video/dentro-il-cursore-poster.jpg", aspect: "16/9", title: "Il film", caption: "20 secondi, 16:9, con l'audio: accendilo" },
+    ],
+  },
+  {
+    id: "una-giornata",
+    category: "graphic-motion",
+    name: "Una giornata",
+    kind: "Graphic motion · 15 secondi",
+    status: "realizzato",
+    tagline: "Un volo in 3D sopra questo sito, dalla mattina alla notte.",
+    description:
+      "La camera scivola giù per il portfolio mentre i titoli, le foto e le card si alzano verso l'obiettivo; le ombre girano con il sole e la luce scende fino alla notte. Poi la pagina si vede tutta dall'alto e la camera ci si tuffa dentro, fino alla frase finale: lavorano per te, anche quando dormi.",
+    benefits: ["Presenta un sito o un prodotto senza girare nulla", "Profondità di campo e mosso come in una ripresa vera", "Colonna sonora sincronizzata, fatta in codice"],
+    stack: ["WebGL2", "Playwright", "ffmpeg", "Audio di sintesi"],
+    accent: "violet",
+    cover: "/video/showreel-poster.jpg",
+    orientation: "landscape",
+    gallery: [],
+    videos: [
+      { src: "/video/showreel.mp4", poster: "/video/showreel-poster.jpg", aspect: "5/4", title: "Il film", caption: "15 secondi, 5:4, con l'audio: accendilo" },
     ],
   },
 ];
