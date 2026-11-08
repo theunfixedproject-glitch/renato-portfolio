@@ -1,6 +1,7 @@
 @import "tailwindcss";
 /* i film di graphic motion non fanno parte del sito */
 @source not "../../motion";
+@source not "../../.claude";
 
 @theme {
   --color-ink: #060608;
