@@ -1,13 +1,14 @@
 "use strict";
 /*
- * "Dentro il cursore" — showreel di Renato Manzotti.
- * Un cursore lampeggiante e uno zoom che non si ferma: ogni scena è nascosta in un dettaglio della precedente.
+ * "Dentro il cursore" (versione 2) — showreel di Renato Manzotti.
+ * Sei manifesti, una porta ciascuno: un solo zoom in avanti, e in ogni manifesto c'è un dettaglio che contiene già,
+ * dal vivo e in miniatura, il manifesto successivo. Alla fine il nome si cancella fino al cursore e il film ricomincia.
  * Tutto si calcola da t dentro window.seek(t): niente animazioni CSS, niente timer, nessuno stato tra un fotogramma e l'altro.
  */
 const W = 1920, H = 1080, CX = 960, CY = 540, DUR = 20, BEAT = 0.5;
 const COL = { v: "#a259ff", g: "#3dff9a", s: "#c79bff", k: "#060608", w: "#ffffff" };
 const cv = document.getElementById("c");
-// le scene disegnano sempre su "ctx": durante lo zoom lo si punta su una tela a parte, così le copie si mediano davvero
+// le scene disegnano sempre su "ctx": per il mosso lo si punta su una tela a parte, così le copie si mediano davvero
 let ctx = cv.getContext("2d");
 const MAIN = ctx;
 const offCanvas = document.createElement("canvas");
@@ -22,23 +23,22 @@ const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const lerp = (a, b, u) => a + (b - a) * u;
 const prog = (t, a, b) => clamp((t - a) / (b - a));
 const expoOut = (u) => (u >= 1 ? 1 : 1 - Math.pow(2, -10 * u));
-const expoInOut = (u) => (u <= 0 ? 0 : u >= 1 ? 1 : u < 0.5 ? Math.pow(2, 20 * u - 10) / 2 : (2 - Math.pow(2, -20 * u + 10)) / 2);
 // molla con smorzamento critico: arriva senza rimbalzare
 const spring = (t, t0, w = 24) => { const x = t - t0; return x <= 0 ? 0 : 1 - (1 + w * x) * Math.exp(-w * x); };
-// spinta sul battere: 1 sul colpo di cassa, poi scende in fretta
 const kick = (t) => { const x = ((t % BEAT) + BEAT) % BEAT; return Math.exp(-x * 9); };
-const font = (wgt, size) => `${Math.round(wgt)} ${size.toFixed(1)}px Syne`;
-const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
-const mixCol = (a, b, u) => { const A = hexRgb(a), B = hexRgb(b); return `rgb(${A.map((x, i) => Math.round(lerp(x, B[i], clamp(u)))).join(",")})`; };
-function bg(c) { ctx.fillStyle = c; ctx.fillRect(-W * 60, -H * 60, W * 121, H * 121); }
-
-/** Disegna più copie lungo una direzione: il mosso segue velocità e direzione dei movimenti veloci. */
-function smear(dx, dy, draw) {
+const font = (wgt, size) => `${Math.round(clamp(wgt, 400, 800))} ${Math.max(1, size).toFixed(1)}px Syne`;
+function bg(c) { ctx.fillStyle = c; ctx.fillRect(-W * 40, -H * 40, W * 81, H * 81); }
+function textW(str, wgt, size) { ctx.font = font(wgt, size); return ctx.measureText(str).width; }
+const fit = (str, wgt, maxW, maxS) => Math.min(maxS, (maxS * maxW) / textW(str, wgt, maxS));
+const capOf = (wgt, size) => { ctx.font = font(wgt, size); return ctx.measureText("H").actualBoundingBoxAscent; };
+/** Avanza in un'altra scala attorno al centro dello schermo: la camera va sempre avanti. */
+function zoomAt(s, cx = CX, cy = CY) { ctx.translate(cx, cy); ctx.scale(s, s); ctx.translate(-cx, -cy); }
+function rr(x0, y0, x1, y1, r) { ctx.beginPath(); ctx.roundRect(x0, y0, x1 - x0, y1 - y0, r); }
+/** Più copie lungo una direzione, tutte con lo stesso peso: il mosso segue velocità e direzione. */
+function smear(dx, dy, draw, max = 14) {
   const len = Math.hypot(dx, dy);
-  if (len < 3) { draw(0, 0); return; }
-  // ogni copia pesa uguale: la k-esima si disegna con opacità 1/k sopra le precedenti
-  const n = Math.min(20, Math.ceil(len / 2) + 1);
-  const a0 = ctx.globalAlpha;
+  if (len < 2) { draw(0, 0); return; }
+  const n = Math.min(max, Math.ceil(len / 3) + 1), a0 = ctx.globalAlpha;
   for (let i = 0; i < n; i++) {
     ctx.globalAlpha = a0 / (i + 1);
     const u = i / (n - 1) - 0.5;
@@ -46,74 +46,260 @@ function smear(dx, dy, draw) {
   }
   ctx.globalAlpha = a0;
 }
-
-/* ------------------------------------------------------------------ */
-/* testo                                                               */
-/* ------------------------------------------------------------------ */
-function textW(str, wgt, size) { ctx.font = font(wgt, size); return ctx.measureText(str).width; }
-/** Una parola tagliata in strisce orizzontali che arrivano una dopo l'altra (effetto slit-scan). */
-function sliceText(str, x, base, size, wgt, color, t0, t, dir = 1, opts = {}) {
-  const n = opts.slices ?? 12, top = base - size * 0.82, hh = size * 0.98, dist = opts.dist ?? 1700;
-  ctx.font = font(wgt, size);
-  ctx.fillStyle = color;
-  for (let i = 0; i < n; i++) {
-    const k = dir > 0 ? i : n - 1 - i;
-    const st = t0 + k * (opts.stagger ?? 0.014);
-    const out = opts.out != null ? spring(t, opts.out + k * 0.012, 26) : 0;
-    const off = (1 - spring(t, st, 22)) * dist * dir - out * dist * (opts.outDir ?? -dir);
-    const v = ((1 - spring(t - 1 / 120, st, 22)) - (1 - spring(t, st, 22))) * dist * dir * 120 / 60 + (opts.vx ?? 0);
-    if (Math.abs(off) > W * 1.5) continue;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(-W * 4, top + (hh * i) / n, W * 9, hh / n + 0.6);
-    ctx.clip();
-    smear(-v * 0.7, 0, (sx) => ctx.fillText(str, x + off + sx, base));
-    ctx.restore();
-  }
-}
-/** Cambio parola come un tabellone: ogni lettera rotola in verticale. */
-function rollText(oldS, newS, cx, base, size, wOld, wNew, color, t0, t, extra = {}) {
-  const top = base - size * 0.86, bandH = size * 1.14;
+/** Il sistema grafico dei manifesti: due righe di servizio in alto e una fascia che scorre in basso. */
+function chrome(fg, left, right, t, marquee = true) {
+  ctx.fillStyle = fg;
+  ctx.font = font(600, 28);
+  ctx.textAlign = "left";
+  ctx.fillText(left, 96, 104);
+  ctx.textAlign = "right";
+  ctx.fillText(right, W - 96, 104);
+  ctx.textAlign = "left";
+  ctx.fillRect(96, 128, W - 192, 2);
+  if (!marquee) return;
+  ctx.fillRect(96, 962, W - 192, 2);
+  const str = "siti · shop · app · bot · AI · motion · video · ";
+  ctx.font = font(700, 30);
+  const sw = ctx.measureText(str).width;
   ctx.save();
   ctx.beginPath();
-  ctx.rect(-W, top, W * 4, bandH);
+  ctx.rect(96, 970, W - 192, 80);
   ctx.clip();
+  let x = 96 - ((t * 260) % sw);
+  while (x < W) { ctx.fillText(str, x, 1016); x += sw; }
+  ctx.restore();
+}
+/** Cambio parola come un tabellone: le lettere vecchie salgono via, le nuove arrivano dal basso, una dopo l'altra. */
+function roll(oldS, newS, x, base, size, wgt, color, t0, t, align = "center") {
+  const top = base - size * 0.92, h = size * 1.2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(-W, top, W * 4, h);
+  ctx.clip();
+  ctx.font = font(wgt, size);
   ctx.fillStyle = color;
-  const draw = (s, wgt, sign) => {
-    ctx.font = font(wgt, size);
-    const sp = sign < 0 ? extra.spOld ?? 0 : 0;
-    const tw = ctx.measureText(s).width + sp * (s.length - 1);
-    let x = cx - tw / 2;
+  const draw = (s, out) => {
+    if (!s) return;
+    const tw = ctx.measureText(s).width;
+    let xx = align === "center" ? x - tw / 2 : align === "right" ? x - tw : x;
     for (let j = 0; j < s.length; j++) {
-      const e = spring(t, t0 + j * 0.035, 26), ePrev = spring(t - 1 / 120, t0 + j * 0.035, 26);
-      const y = sign < 0 ? -bandH * 1.25 * e : bandH * (1 - e);
-      const vy = (sign < 0 ? -bandH : -bandH) * (e - ePrev) * 2;
-      const ch = s[j], cw = ctx.measureText(s.slice(0, j + 1)).width - ctx.measureText(s.slice(0, j)).width;
-      smear(0, -vy * 0.6, (sx, sy) => ctx.fillText(ch, x + sx, base + y + sy));
-      x += cw + sp;
+      const e = spring(t, t0 + j * 0.018, 30), e0 = spring(t - 1 / 180, t0 + j * 0.018, 30);
+      const y = out ? -h * 1.1 * e : h * (1 - e), dy = (out ? -h * 1.1 : -h) * (e - e0);
+      const adv = ctx.measureText(s.slice(0, j + 1)).width - ctx.measureText(s.slice(0, j)).width;
+      if (Math.abs(y) < h * 1.2) smear(0, dy, (sx, sy) => ctx.fillText(s[j], xx + sx, base + y + sy));
+      xx += adv;
     }
   };
-  if (oldS) draw(oldS, wOld, -1);
-  draw(newS, wNew, 1);
+  if (oldS && t < t0 + 0.4) draw(oldS, true);
+  draw(newS, false);
   ctx.restore();
-  void extra;
 }
-/** Testo che si digita, con il blocco che resta centrato man mano che cresce. */
-function typeLayout(str, times, wgt, size, t) {
-  ctx.font = font(wgt, size);
-  let shift = 0;
-  for (let i = 0; i < str.length; i++) {
-    const adv = ctx.measureText(str.slice(0, i + 1)).width - ctx.measureText(str.slice(0, i)).width;
-    shift += (adv / 2) * spring(t, times[i], 40);
-  }
-  let n = 0;
-  for (const x of times) if (t >= x) n++;
-  return { n, x0: CX - shift };
-}
-function caret(x, yTop, h, w, color) { ctx.fillStyle = color; ctx.fillRect(x, yTop, w, h); }
 
 /* ------------------------------------------------------------------ */
-/* forme per il morphing: contorni campionati per lunghezza d'arco      */
+/* manifesto 1 e 6 · il campo di testo: la domanda, poi il nome         */
+/* ------------------------------------------------------------------ */
+const FIELD = { x0: 96, y0: 300, x1: 1824, y1: 780, r: 84 };
+const SEND = { x: 1652, y: 540, r: 126 };
+const TX = 196, CARET_H = 236, CARET_W = 18;
+const HOOK = "Hai un'idea?";
+const HOOK_T = HOOK.split("").map((_, i) => 0.5 + i * 0.042);
+const CHIPS = ["un sito", "un'app", "un bot", "un video"];
+const loopT = (t) => (t >= 18 ? t - 20 : t); // la stessa scena alla fine e all'inizio: il tempo attorno al giro
+function fieldBase(t, opts) {
+  bg(COL.k);
+  chrome(COL.s, "Renato Manzotti", "siti · app · bot · AI · video", t, false);
+  ctx.fillStyle = COL.s;
+  rr(FIELD.x0, FIELD.y0, FIELD.x1, FIELD.y1, FIELD.r);
+  ctx.fill();
+  // l'invio: un disco verde con la freccia, che si preme sul battito
+  const r = SEND.r * (opts.send ?? 1);
+  ctx.fillStyle = COL.g;
+  ctx.beginPath();
+  ctx.arc(SEND.x, SEND.y, r, 0, Math.PI * 2);
+  ctx.fill();
+  if (!opts.open) {
+    ctx.strokeStyle = COL.k;
+    ctx.lineWidth = 18 * (opts.send ?? 1);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    const a = r * 0.42;
+    ctx.beginPath();
+    ctx.moveTo(SEND.x - a, SEND.y); ctx.lineTo(SEND.x + a, SEND.y);
+    ctx.moveTo(SEND.x + a * 0.15, SEND.y - a * 0.8); ctx.lineTo(SEND.x + a, SEND.y); ctx.lineTo(SEND.x + a * 0.15, SEND.y + a * 0.8);
+    ctx.stroke();
+  }
+  // i suggerimenti sotto il campo
+  ctx.font = font(600, 34);
+  let x = FIELD.x0;
+  CHIPS.forEach((c, i) => {
+    const w = ctx.measureText(c).width + 64, on = opts.chip === i;
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = on ? COL.g : COL.s;
+    ctx.fillStyle = COL.g;
+    rr(x, 836, x + w, 906, 35);
+    if (on) ctx.fill(); else ctx.stroke();
+    ctx.fillStyle = on ? COL.k : COL.w;
+    ctx.fillText(c, x + 32, 883);
+    x += w + 20;
+  });
+}
+function caret(x, yc, h = CARET_H) { ctx.fillStyle = COL.k; ctx.fillRect(x, yc - h / 2, CARET_W, h); }
+const HOOK_S = () => fit(HOOK, 800, 1260, 200);
+function drawHook(t) {
+  const u = loopT(t);
+  ctx.save();
+  zoomAt(1 + 0.02 * u);
+  const press = spring(t, 1.5, 30) - spring(t, 1.62, 22);
+  fieldBase(t, { send: 1 - 0.1 * press + 0.08 * spring(t, 1.62, 22), open: t >= 1.25, chip: t >= 1.25 ? 0 : -1 });
+  const size = HOOK_S(), cap = capOf(800, size), base = CY + cap / 2;
+  let x = TX, shown = 0;
+  for (let i = 0; i < HOOK.length; i++) {
+    if (t < HOOK_T[i]) break;
+    shown = i + 1;
+    // ogni lettera arriva sottile e dal basso, e diventa piena
+    const e = spring(t, HOOK_T[i], 55), wg = lerp(620, 800, spring(t, HOOK_T[i], 50));
+    ctx.font = font(wg, size);
+    ctx.fillStyle = COL.k;
+    ctx.fillText(HOOK[i], x, base + 40 * (1 - e));
+    x += textW(HOOK.slice(0, i + 1), 800, size) - textW(HOOK.slice(0, i), 800, size);
+  }
+  const on = t >= 0.5 || t < 0.25;
+  if (on) caret(shown ? x + 12 : TX, CY);
+  ctx.restore();
+}
+const hookPortal = (t) => {
+  const s = 1 + 0.02 * loopT(t), press = spring(t, 1.5, 30) - spring(t, 1.62, 22);
+  return { kind: "circle", x: CX + (SEND.x - CX) * s, y: CY + (SEND.y - CY) * s, r: SEND.r * (1 - 0.1 * press + 0.08 * spring(t, 1.62, 22)) * s };
+};
+const TITLE = ["Renato", "Manzotti"], TAG = "siti, app e bot su misura";
+function drawTitle(t) {
+  ctx.save();
+  // atterraggio a molla, poi avanti piano fino a ritrovarsi nel primo fotogramma
+  zoomAt(1 + 0.02 * loopT(t) + 0.03 * (spring(t, 18, 10) - 1));
+  fieldBase(t, { chip: t >= 19.0 && t < 19.5 ? 2 : -1 });
+  const size = fit("Manzotti", 800, 1180, 196), cap = capOf(800, size), gap = cap * 0.42;
+  const b1 = CY - (cap * 2 + gap) / 2 + cap, b2 = b1 + cap + gap;
+  // il nome cambia peso sul battito: pieno, sottile, pieno
+  const wg = 800 - 360 * spring(t, 18.75, 24) + 360 * spring(t, 19.0, 24);
+  // la cancellazione: lettera per lettera dalla fine, alla velocità di un tasto tenuto premuto
+  const total = TITLE[0].length + TITLE[1].length;
+  const del = Math.floor(clamp((t - 19.5) / 0.03, 0, total));
+  const keep = total - del;
+  const l1 = TITLE[0].slice(0, Math.min(TITLE[0].length, keep)), l2 = TITLE[1].slice(0, Math.max(0, keep - TITLE[0].length));
+  ctx.fillStyle = COL.k;
+  ctx.font = font(wg, size);
+  ctx.fillText(l1, TX, b1);
+  ctx.fillText(l2, TX, b2);
+  // il titolo di servizio sopra il campo
+  const tagN = Math.floor(clamp((t - 18.25) / 0.012, 0, TAG.length)) - Math.floor(clamp((t - 19.5) / 0.016, 0, TAG.length));
+  const tg = TAG.slice(0, Math.max(0, tagN));
+  ctx.font = font(700, 64);
+  const cut = Math.min(tg.length, 16);
+  ctx.fillStyle = COL.w;
+  ctx.fillText(tg.slice(0, cut), FIELD.x0, 262);
+  if (tg.length > cut) { ctx.fillStyle = COL.g; ctx.fillText(tg.slice(cut), FIELD.x0 + ctx.measureText(tg.slice(0, cut)).width, 262); }
+  // il cursore: in fondo a quello che resta; quando non resta niente torna dov'era all'inizio
+  let cx, cy, ch = CARET_H;
+  if (l2.length) { cx = TX + textW(l2, wg, size) + 12; cy = b2 - cap / 2; }
+  else if (l1.length) { cx = TX + textW(l1, wg, size) + 12; cy = b1 - cap / 2; }
+  else { cx = TX; cy = CY; }
+  const home = spring(t, 19.88, 40);
+  if (keep > 0 || t < 19.88) ch = lerp(cap * 1.32, CARET_H, home); else ch = CARET_H;
+  caret(cx, lerp(cy, CY, keep === 0 ? home : 0), ch);
+  ctx.restore();
+}
+
+/* ------------------------------------------------------------------ */
+/* manifesto 2 · tipografia: una parola, tutto lo schermo               */
+/* ------------------------------------------------------------------ */
+const POSTERS = [
+  { t: 2.0, w: "SITI", bg: COL.g, fg: COL.k, acc: "track" },
+  { t: 2.5, w: "SHOP", bg: COL.v, fg: COL.w, acc: "skew" },
+  { t: 3.0, w: "APP", bg: COL.k, fg: COL.g, acc: "wide" },
+  { t: 3.5, w: "BOT", bg: COL.w, fg: COL.v, acc: "bold" },
+  { t: 4.0, w: "AI", bg: COL.s, fg: COL.k, acc: "scale" },
+  { t: 4.5, w: "MOTION", bg: COL.g, fg: COL.k, acc: "thin" },
+  { t: 5.0, w: "VIDEO", bg: COL.k, fg: COL.w, acc: "portal" },
+];
+function videoGeom(t) {
+  const P = POSTERS[6], size = fit("VIDEO", 800, 1640, 700), cap = capOf(800, size);
+  const tw = textW("VIDEO", 800, size), x0 = CX - tw / 2 - 30 * (t - P.t), base = CY + cap / 2 + 20;
+  ctx.font = font(800, size);
+  const m = ctx.measureText("O"), wv = textW("VIDE", 800, size);
+  const rx = (m.actualBoundingBoxLeft + m.actualBoundingBoxRight) / 2, ry = (m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) / 2;
+  const ox = x0 + wv - m.actualBoundingBoxLeft + rx, oy = base - m.actualBoundingBoxAscent + ry;
+  // la O si apre: diventa un anello più largo e più sottile, e dentro c'è già la scena dopo
+  const g = spring(t, 5.25, 22), th = lerp(rx * 0.42, rx * 0.16, g);
+  return { size, base, x0, ox, oy, rx: rx * (1 + 0.12 * g), ry: ry * (1 + 0.12 * g), th };
+}
+function drawPoster(i, t) {
+  const P = POSTERS[i];
+  bg(P.bg);
+  chrome(P.fg, `servizi — ${String(i + 1).padStart(2, "0")}/07`, "Renato Manzotti", t);
+  const a = spring(t, P.t + 0.25, 24), drift = -30 * (t - P.t);
+  ctx.fillStyle = P.fg;
+  if (P.acc === "portal") {
+    const v = videoGeom(t);
+    ctx.font = font(800, v.size);
+    ctx.fillText("VIDE", v.x0, v.base);
+    ctx.beginPath();
+    ctx.ellipse(v.ox, v.oy, v.rx, v.ry, 0, 0, Math.PI * 2);
+    ctx.ellipse(v.ox, v.oy, v.rx - v.th, v.ry - v.th, 0, 0, Math.PI * 2, true);
+    ctx.fill("evenodd");
+    return;
+  }
+  let wgt = 800, ls = 0, sx = 1, sk = 0, sc = 1;
+  if (P.acc === "track") { wgt = lerp(800, 430, a); ls = 1; }
+  if (P.acc === "skew") sk = -0.26 * a;
+  if (P.acc === "wide") { sx = lerp(1, 0.72, a); }
+  if (P.acc === "bold") wgt = lerp(430, 800, a);
+  if (P.acc === "scale") sc = 1 + 0.14 * a;
+  if (P.acc === "thin") { wgt = lerp(800, 430, a); ls = 1; }
+  const size = fit(P.w, 800, P.acc === "wide" ? 1500 : 1640, P.w.length <= 2 ? 760 : 700), cap = capOf(800, size);
+  // più sottile ma larga uguale: la spaziatura compensa il peso che cala
+  if (ls) ls = (textW(P.w, 800, size) - textW(P.w, wgt, size)) / P.w.length;
+  ctx.letterSpacing = `${ls.toFixed(1)}px`;
+  ctx.font = font(wgt, size);
+  const tw = ctx.measureText(P.w).width;
+  ctx.save();
+  ctx.translate(CX + drift, CY + cap / 2 + 20);
+  ctx.transform(sx * sc, 0, -sk * sc, sc, 0, 0);
+  ctx.translate(0, -cap / 2 * (sc - 1) / sc);
+  ctx.fillText(P.w, -tw / 2, 0);
+  ctx.restore();
+  ctx.letterSpacing = "0px";
+}
+/** Il manifesto nuovo arriva a fessure: dodici strisce orizzontali, ognuna con la sua molla, sfondo compreso. */
+function drawType(t) {
+  const T = Math.max(t, 2.0);
+  let i = 0;
+  while (i < POSTERS.length - 1 && T >= POSTERS[i + 1].t) i++;
+  ctx.save();
+  zoomAt(1 + 0.03 * spring(T, 2.0, 10) + 0.01 * (T - 2));
+  const P = POSTERS[i], dir = i % 2 ? -1 : 1, n = 12;
+  if (i === 0 || T - P.t > 0.3) { drawPoster(i, T); ctx.restore(); return; }
+  drawPoster(i - 1, T);
+  for (let j = 0; j < n; j++) {
+    const k = dir > 0 ? j : n - 1 - j;
+    const st = P.t + k * 0.009, off = (1 - spring(T, st, 34)) * W * 1.05 * dir, off0 = (1 - spring(T - 1 / 180, st, 34)) * W * 1.05 * dir;
+    if (Math.abs(off) > W) continue;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(-W, (H * j) / n - 0.5, W * 3, H / n + 1);
+    ctx.clip();
+    smear(off - off0, 0, (sx) => { ctx.save(); ctx.translate(off + sx, 0); drawPoster(i, T); ctx.restore(); }, 7);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+const typePush = (t) => 1 + 0.03 * spring(t, 2.0, 10) + 0.01 * (t - 2);
+const typePortal = (t) => {
+  const v = videoGeom(t), s = typePush(t);
+  return { kind: "ellipse", x: CX + (v.ox - CX) * s, y: CY + (v.oy - CY) * s, rx: (v.rx - v.th) * s, ry: (v.ry - v.th) * s };
+};
+
+/* ------------------------------------------------------------------ */
+/* manifesto 3 · le forme piene, poi il telefono in 3D                  */
 /* ------------------------------------------------------------------ */
 const NPT = 240;
 function resample(pts) {
@@ -134,861 +320,545 @@ function resample(pts) {
   }
   return out;
 }
-function arcPts(cx, cy, r, a0, a1, n = 16) { const o = []; for (let i = 0; i <= n; i++) { const a = lerp(a0, a1, i / n); o.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } return o; }
+function arcPts(cx, cy, r, a0, a1, n = 18) { const o = []; for (let i = 0; i <= n; i++) { const a = lerp(a0, a1, i / n); o.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } return o; }
 function rrect(w, h, r) {
-  const x = w / 2, y = h / 2;
-  return [
-    ...arcPts(x - r, -y + r, r, -Math.PI / 2, 0),
-    ...arcPts(x - r, y - r, r, 0, Math.PI / 2),
-    ...arcPts(-x + r, y - r, r, Math.PI / 2, Math.PI),
-    ...arcPts(-x + r, -y + r, r, Math.PI, Math.PI * 1.5),
-  ];
+  const x = w / 2, y = h / 2, P = Math.PI;
+  return [...arcPts(x - r, -y + r, r, -P / 2, 0), ...arcPts(x - r, y - r, r, 0, P / 2), ...arcPts(-x + r, y - r, r, P / 2, P), ...arcPts(-x + r, -y + r, r, P, P * 1.5)];
 }
-const circle = (r) => arcPts(0, 0, r, -Math.PI / 2, Math.PI * 1.5, 120).slice(0, -1);
 function bag() {
-  // sacchetto: trapezio arrotondato, più largo in basso
-  const tw = 300, bw = 380, h = 340, r = 26;
-  return [
-    ...arcPts(tw / 2 - r, -h / 2 + r, r, -Math.PI / 2, -0.2),
-    ...arcPts(bw / 2 - r, h / 2 - r, r, 0.1, Math.PI / 2),
-    ...arcPts(-bw / 2 + r, h / 2 - r, r, Math.PI / 2, Math.PI - 0.1),
-    ...arcPts(-tw / 2 + r, -h / 2 + r, r, Math.PI + 0.2, Math.PI * 1.5),
-  ].map(([x, y]) => [x, y + 40]);
+  const tw = 520, bw = 680, h = 600, r = 44, P = Math.PI;
+  return [...arcPts(tw / 2 - r, -h / 2 + r, r, -P / 2, -0.2), ...arcPts(bw / 2 - r, h / 2 - r, r, 0.1, P / 2), ...arcPts(-bw / 2 + r, h / 2 - r, r, P / 2, P - 0.1), ...arcPts(-tw / 2 + r, -h / 2 + r, r, P + 0.2, P * 1.5)].map(([x, y]) => [x, y + 60]);
 }
 function bubble() {
-  const w = 520, h = 330, r = 70, x = w / 2, y = h / 2;
-  return [
-    ...arcPts(x - r, -y + r, r, -Math.PI / 2, 0),
-    ...arcPts(x - r, y - r, r, 0, Math.PI / 2),
-    [-x + 170, y], [-x + 70, y + 90], [-x + 95, y],
-    ...arcPts(-x + r, y - r, r, Math.PI / 2, Math.PI).slice(4),
-    ...arcPts(-x + r, -y + r, r, Math.PI, Math.PI * 1.5),
-  ].map(([a, b]) => [a, b - 30]);
+  const w = 940, h = 560, r = 130, x = w / 2, y = h / 2, P = Math.PI;
+  return [...arcPts(x - r, -y + r, r, -P / 2, 0), ...arcPts(x - r, y - r, r, 0, P / 2), [-x + 300, y], [-x + 120, y + 170], [-x + 150, y], ...arcPts(-x + r, y - r, r, P / 2, P).slice(6), ...arcPts(-x + r, -y + r, r, P, P * 1.5)].map(([a, b]) => [a, b - 60]);
 }
-function tri(r) {
-  // triangolo "play" con gli spigoli arrotondati
-  const v = [0, 1, 2].map((i) => [Math.cos(-Math.PI / 2 + i * 2.0944) * r, Math.sin(-Math.PI / 2 + i * 2.0944) * r]).map(([x, y]) => [y * -1, x]);
-  const out = [];
-  for (let i = 0; i < 3; i++) {
-    const a = v[i], b = v[(i + 1) % 3];
-    for (let k = 0; k < 30; k++) out.push([lerp(a[0], b[0], k / 30), lerp(a[1], b[1], k / 30)]);
-  }
-  return out.map(([x, y]) => [x + 24, y]);
-}
+const circle = (r) => arcPts(0, 0, r, -Math.PI / 2, Math.PI * 1.5, 120).slice(0, -1);
 function star(r) {
   const o = [];
-  for (let i = 0; i < 160; i++) {
-    const a = -Math.PI / 2 + (i / 160) * Math.PI * 2;
-    const k = Math.pow(Math.abs(Math.cos(2 * a)), 2.6);
-    const rr = lerp(r * 0.26, r, k);
-    o.push([Math.cos(a) * rr, Math.sin(a) * rr]);
+  for (let i = 0; i < 200; i++) {
+    const a = -Math.PI / 2 + (i / 200) * Math.PI * 2, k = Math.pow(Math.abs(Math.cos(2 * a)), 2.4);
+    o.push([Math.cos(a) * lerp(r * 0.24, r, k), Math.sin(a) * lerp(r * 0.24, r, k)]);
   }
   return o;
 }
-const SH = {
-  dot: resample(circle(120)),
-  web: resample(rrect(660, 420, 28)),
-  bag: resample(bag()),
-  phone: resample(rrect(300, 600, 52)),
-  bubble: resample(bubble()),
-  play: resample(tri(230)),
-  star: resample(star(250)),
+const PHONE_W = 440, PHONE_H = 900, PHONE_R = 72;
+const SHP = {
+  web: resample(rrect(1000, 640, 44)),
+  shop: resample(bag()),
+  app: resample(rrect(430, 820, 70)),
+  bot: resample(bubble()),
+  video: resample(circle(390)),
+  ai: resample(star(420)),
+  phone: resample(rrect(PHONE_W, PHONE_H, PHONE_R)),
 };
-function fillPts(pts, ox, oy, sc, color) {
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  pts.forEach(([x, y], i) => (i ? ctx.lineTo(ox + x * sc, oy + y * sc) : ctx.moveTo(ox + x * sc, oy + y * sc)));
+const MORPH = [
+  { t: 6.0, sh: "web", col: COL.w, label: "web" },
+  { t: 6.5, sh: "shop", col: COL.g, label: "shop" },
+  { t: 7.0, sh: "app", col: COL.s, label: "app" },
+  { t: 7.5, sh: "bot", col: COL.v, label: "bot" },
+  { t: 8.0, sh: "video", col: COL.g, label: "video" },
+  { t: 8.5, sh: "ai", col: COL.v, label: "AI" },
+  { t: 9.0, sh: "phone", col: COL.w, label: "" },
+];
+const HERO = [700, 560];
+function morphState(t) {
+  let i = 0;
+  while (i < MORPH.length - 1 && t >= MORPH[i + 1].t) i++;
+  const K = MORPH[i], Pm = MORPH[Math.max(0, i - 1)], m = i === 0 ? 1 : spring(t, K.t, 26);
+  const a = SHP[Pm.sh], b = SHP[K.sh];
+  const pts = a.map((p, j) => [lerp(p[0], b[j][0], m), lerp(p[1], b[j][1], m)]);
+  const c = spring(t, 9.0, 18);
+  return { i, K, m, pts, cx: lerp(HERO[0], CX, c), cy: lerp(HERO[1], CY, c), center: c };
+}
+function heroPath(S, keep = false) {
+  if (!keep) ctx.beginPath();
+  S.pts.forEach(([x, y], j) => (j ? ctx.lineTo(S.cx + x, S.cy + y) : ctx.moveTo(S.cx + x, S.cy + y)));
   ctx.closePath();
+}
+// i dettagli ritagliati: entrano sul mezzo battito, quando la forma è arrivata
+function details(S, t) {
+  const K = S.K, d = spring(t, K.t + 0.25, 30), x = S.cx, y = S.cy;
+  if (d < 0.01 && K.sh !== "phone") return;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = COL.k;
+  const pop = (fn, k = d) => { ctx.save(); ctx.scale(k, k); fn(); ctx.restore(); };
+  if (K.sh === "web") pop(() => {
+    for (const cx of [-420, -370, -320]) { ctx.beginPath(); ctx.arc(cx, -250, 17, 0, Math.PI * 2); ctx.fill(); }
+    rr(-260, -268, 440, -232, 18); ctx.fill();
+    rr(-440, -170, 440, 60, 26); ctx.fill();
+    rr(-440, 110, 120, 140, 15); ctx.fill();
+    rr(-440, 180, -40, 210, 15); ctx.fill();
+    rr(200, 110, 440, 250, 22); ctx.fill();
+  });
+  if (K.sh === "shop") {
+    ctx.strokeStyle = COL.g; ctx.lineWidth = 46; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(0, -240, 150 * d, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+    pop(() => { ctx.beginPath(); ctx.arc(0, 80, 120, 0, Math.PI * 2); ctx.fill(); });
+  }
+  if (K.sh === "app") pop(() => { rr(-170, -360, 170, 360, 44); ctx.fill(); ctx.fillStyle = COL.s; rr(-130, -300, 130, -120, 26); ctx.fill(); rr(-130, -80, 130, 0, 20); ctx.fill(); rr(-130, 40, 40, 90, 20); ctx.fill(); });
+  if (K.sh === "bot") pop(() => { for (const cx of [-200, 0, 200]) { ctx.beginPath(); ctx.arc(cx, -60, 54, 0, Math.PI * 2); ctx.fill(); } });
+  if (K.sh === "video") pop(() => { ctx.beginPath(); ctx.moveTo(-100, -160); ctx.lineTo(180, 0); ctx.lineTo(-100, 160); ctx.closePath(); ctx.fill(); });
+  if (K.sh === "ai") pop(() => { ctx.beginPath(); ctx.arc(0, 0, 80, 0, Math.PI * 2); ctx.fill(); });
+  if (K.sh === "phone") {
+    // lo schermo e la sua app: gli stessi strati che tra poco si staccheranno in 3D
+    const s1 = spring(t, 9.25, 26), s2 = spring(t, 9.5, 26);
+    if (s1 > 0.01) pop(() => { rr(-PHONE_W / 2 + 26, -PHONE_H / 2 + 26, PHONE_W / 2 - 26, PHONE_H / 2 - 26, PHONE_R - 22); ctx.fill(); }, s1);
+    if (s2 > 0.01) for (const L of LAYERS) pop(() => drawLayer2D(L), s2);
+  }
+  ctx.restore();
+}
+const LAYERS = [
+  { x0: -180, y0: -390, x1: 180, y1: -320, c: COL.v, z: 90 },
+  { x0: -180, y0: -290, x1: 180, y1: -60, c: COL.g, z: 200 },
+  { x0: -180, y0: -30, x1: 180, y1: 172, c: COL.s, z: 320, score: true },
+  { x0: -180, y0: 210, x1: 180, y1: 290, c: COL.v, z: 430 },
+  { x0: -110, y0: 340, x1: 110, y1: 380, c: COL.w, z: 150, dots: true },
+];
+function drawLayer2D(L) {
+  ctx.fillStyle = L.c;
+  if (L.dots) { for (const cx of [-80, 0, 80]) { ctx.beginPath(); ctx.arc(cx, 360, 18, 0, Math.PI * 2); ctx.fill(); } return; }
+  rr(L.x0, L.y0, L.x1, L.y1, 22);
   ctx.fill();
+  if (L.score) scoreText(L);
+}
+function scoreText(L) {
+  ctx.fillStyle = COL.k;
+  ctx.font = font(800, 120);
+  ctx.textAlign = "center";
+  ctx.fillText("100", (L.x0 + L.x1) / 2, L.y1 - 52);
+  ctx.textAlign = "left";
+}
+/** La parola accanto alla forma: bianca sul nero, nera dove passa sopra la forma. */
+function labelOverShape(S, t) {
+  const K = S.K, prev = MORPH[Math.max(0, S.i - 1)], out = spring(t, 9.0, 22);
+  if (out > 0.999) return;
+  const x = 1060 + out * 900, base = 650, size = Math.min(300, fit(K.label || "app", 800, 760, 300));
+  const draw = (color) => roll(S.i === 0 ? "" : prev.label, K.label, x, base, size, 800, color, K.t, t, "left");
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(-W, -H, W * 3, H * 3);
+  heroPath(S, true);
+  ctx.clip("evenodd");
+  draw(COL.w);
+  ctx.restore();
+  ctx.save();
+  heroPath(S);
+  ctx.clip();
+  draw(COL.k);
+  ctx.restore();
+}
+function tokens(S, t) {
+  const out = spring(t, 9.0, 22);
+  if (out > 0.999) return;
+  ctx.save();
+  ctx.translate(0, out * 260);
+  MORPH.slice(0, 6).forEach((M, j) => {
+    const on = j === Math.min(5, S.i), x = 1150 + j * 120, y = 1000, s = 0.075;
+    ctx.beginPath();
+    SHP[M.sh].forEach(([px, py], q) => (q ? ctx.lineTo(x + px * s, y + py * s) : ctx.moveTo(x + px * s, y + py * s)));
+    ctx.closePath();
+    if (on) { ctx.fillStyle = M.col; ctx.fill(); } else { ctx.strokeStyle = COL.s; ctx.lineWidth = 2.5; ctx.stroke(); }
+  });
+  ctx.restore();
 }
 
-/* ------------------------------------------------------------------ */
-/* 3D minimo: proiezione prospettica e prismi estrusi                   */
-/* ------------------------------------------------------------------ */
+// il 3D: proiezione prospettica, prismi estrusi e ombreggiatura a scalini di palette
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const addv = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const mul = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const norm = (a) => mul(a, 1 / (Math.hypot(...a) || 1));
-const rotY = (p, a) => [p[0] * Math.cos(a) + p[2] * Math.sin(a), p[1], -p[0] * Math.sin(a) + p[2] * Math.cos(a)];
-const rotX = (p, a) => [p[0], p[1] * Math.cos(a) - p[2] * Math.sin(a), p[1] * Math.sin(a) + p[2] * Math.cos(a)];
-function camera3(target, az, el, dist, F, ox = CX, oy = CY) {
-  el = clamp(el, -1.55, 1.5605);
+function camera3(target, az, el, dist, F) {
   const pos = addv(target, mul([Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)], dist));
-  const fw = norm(sub(target, pos));
-  const right = norm(cross(fw, [0, 1, 0]));
-  const up = cross(right, fw);
-  return {
-    pos,
-    p(v) { const d = sub(v, pos), z = dot(d, fw); return [ox + (F * dot(d, right)) / z, oy - (F * dot(d, up)) / z, z]; },
-  };
+  const fw = norm(sub(target, pos)), right = norm(cross(fw, [0, 1, 0])), up = cross(right, fw);
+  return { pos, p(v) { const d = sub(v, pos), z = dot(d, fw); return [CX + (F * dot(d, right)) / z, CY - (F * dot(d, up)) / z, z]; } };
 }
-const LIGHT = norm([-0.4, 0.8, 0.6]);
-const shade = (hex, n) => mixCol("#000000", hex, 0.5 + 0.5 * clamp(dot(n, LIGHT) * 0.6 + 0.45));
-/** Un prisma: contorno 2D (y verso il basso) sul piano (U,V), spessore lungo N. */
-function prism(cam, c, U, V, N, outline, depth, colFront, colSide, scale = 1) {
-  const to3 = ([x, y], n) => addv(addv(addv(c, mul(U, x * scale)), mul(V, -y * scale)), mul(N, n));
-  const front = outline.map((p) => to3(p, depth / 2)), back = outline.map((p) => to3(p, -depth / 2));
-  const facing = dot(N, sub(cam.pos, c)) > 0;
-  const capNear = facing ? front : back;
+const LIGHT = norm([-0.5, 0.7, 0.55]);
+// niente sfumature: ogni faccia prende un colore della palette secondo quanto guarda la luce
+const tone = (n, lit, mid, dark) => { const d = dot(n, LIGHT); return d > 0.35 ? lit : d > -0.1 ? mid : dark; };
+/** Un prisma: contorno 2D (y in basso) sul piano (U,V), spessore lungo N. Restituisce le facce da disegnare. */
+function prismFaces(cam, c, U, V, N, outline, depth, front, tones) {
+  const to3 = ([x, y], n) => addv(addv(addv(c, mul(U, x)), mul(V, -y)), mul(N, n));
+  const F0 = outline.map((p) => to3(p, depth / 2)), B0 = outline.map((p) => to3(p, -depth / 2));
+  const faces = [];
   if (depth > 0.5) {
-    const faces = [];
     for (let i = 0; i < outline.length; i++) {
-      const j = (i + 1) % outline.length;
-      const a = front[i], b = front[j], cc = back[j], d = back[i];
+      const j = (i + 1) % outline.length, a = F0[i], b = F0[j], cc = B0[j], d = B0[i];
       const mid = mul(addv(addv(a, b), addv(cc, d)), 0.25);
       let n = norm(cross(sub(b, a), sub(d, a)));
-      if (dot(n, sub(mid, c)) < 0) n = mul(n, -1); // verso l'esterno
+      if (dot(n, sub(mid, c)) < 0) n = mul(n, -1);
       if (dot(n, sub(cam.pos, mid)) <= 0) continue;
-      faces.push({ q: [a, b, cc, d], n, z: cam.p(mid)[2] });
-    }
-    faces.sort((p, q) => q.z - p.z);
-    for (const f of faces) {
-      const P = f.q.map((v) => cam.p(v));
-      ctx.fillStyle = shade(colSide, f.n);
-      ctx.strokeStyle = ctx.fillStyle;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      P.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
+      faces.push({ q: [a, b, cc, d], color: tone(n, ...tones) });
     }
   }
-  const P = capNear.map((v) => cam.p(v));
-  ctx.fillStyle = colFront;
+  const facing = dot(N, sub(cam.pos, c)) > 0;
+  faces.push({ q: facing ? F0 : B0, color: front, cap: true });
+  return faces;
+}
+function fillQuad(cam, q, color) {
+  const P = q.map((v) => cam.p(v));
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
   ctx.beginPath();
   P.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])));
   ctx.closePath();
   ctx.fill();
+  ctx.stroke();
   return P;
 }
-
-/* ------------------------------------------------------------------ */
-/* scena 1 · l'aggancio: il cursore scrive una domanda                  */
-/* ------------------------------------------------------------------ */
-const HOOK = "Hai un'idea?";
-const HOOK_T = [0.5, 0.54, 0.58, 0.75, 0.77, 0.8, 0.83, 0.86, 0.89, 0.92, 0.95, 1.0];
-const CARET_H = 150;
-function hookState(t) {
-  const size = 168;
-  const L = typeLayout(HOOK, HOOK_T, 700, size, t);
-  const wgt = 700 + (t >= 0.5 ? 100 * kick(t) : 0) - 260 * spring(t, 1.25, 20) * 0;
-  const shown = HOOK.slice(0, L.n);
-  const tw = shown ? textW(shown, wgt, size) : 0;
-  const block = spring(t, 1.25, 30);
-  const cw = lerp(7, 96, block);
-  const cx = shown ? L.x0 + tw + 14 : CX - 3.5;
-  return { size, wgt, shown, L, cx, cw, block };
+function cam3(t) {
+  const az = -0.62 * spring(t, 10.0, 9) + 1.2 * spring(t, 11.5, 9) - 0.58 * spring(t, 12.75, 14);
+  const el = 0.22 * spring(t, 10.0, 9) - 0.12 * spring(t, 11.5, 9) - 0.1 * spring(t, 12.75, 14);
+  const dist = 2000 - 160 * spring(t, 10.0, 6) + 160 * spring(t, 12.75, 14);
+  return camera3([0, 0, 0], az, el, dist, 2000);
 }
-function drawHook(t) {
+const TILES = [
+  [-980, -400, -600, 120, COL.g, "c"], [880, -380, -500, 150, COL.s, "r"], [-760, -460, 300, 90, COL.v, "r"], [820, 380, 260, 110, COL.w, "c"],
+  [-1150, 60, 900, 170, COL.s, "r"], [1100, -40, 1000, 160, COL.g, "c"], [-420, 640, 1150, 120, COL.v, "c"], [500, -660, 1250, 130, COL.s, "r"],
+];
+function drawPhone3D(t) {
   bg(COL.k);
-  const s = hookState(t);
-  const base = CY + 58;
-  if (s.shown) {
-    ctx.font = font(s.wgt, s.size);
-    ctx.fillStyle = COL.w;
-    // l'ultima lettera arriva dal basso; le altre sono già ferme
-    const last = s.L.n - 1, pLast = spring(t, HOOK_T[last], 50);
-    const before = s.shown.slice(0, last);
-    ctx.fillText(before, s.L.x0, base);
-    const bx = s.L.x0 + ctx.measureText(before).width;
-    ctx.fillText(s.shown[last], bx, base + 40 * (1 - pLast));
-  }
-  const on = t >= 0.5 || Math.floor(t / 0.25) % 2 === 0;
-  if (on) caret(s.cx, CY - CARET_H / 2, CARET_H, s.cw, mixCol(COL.w, COL.v, s.block));
-}
-const hookPortal = (t) => { const s = hookState(t); return { kind: "rect", x: s.cx, y: CY - CARET_H / 2, w: s.cw, h: CARET_H, color: COL.v }; };
-
-/* ------------------------------------------------------------------ */
-/* scena 2 · tipografia cinetica                                        */
-/* ------------------------------------------------------------------ */
-const GRID = [["SITI", "SHOP", "APP"], ["BOT", "AI", "VIDEO"]];
-const CELL_W = 640;
-function drawType(t) {
-  bg(COL.v);
-  const base = CY + 130, big = 360;
-  const w800 = (tt) => 760 + 40 * kick(tt);
-  if (t < 4.0) {
-    if (t < 2.5) {
-      // SITI arriva a strisce, poi si stringe e si allarga
-      const sq = spring(t, 2.25, 22);
-      const wgt = lerp(w800(t), 480, sq);
-      ctx.letterSpacing = `${(60 * sq).toFixed(1)}px`;
-      const tw = textW("SITI", wgt, big);
-      sliceText("SITI", CX - tw / 2, base, big, wgt, COL.k, 1.9, t, 1);
-      ctx.letterSpacing = "0px";
-    } else {
-      // inclinazione e allungamento: arrivano sul mezzo battito, se ne vanno col cambio di parola
-      const sk = 0.28 * (spring(t, 2.75, 22) - spring(t, 3.0, 30));
-      const sx = 1 + 0.42 * (spring(t, 3.25, 22) - spring(t, 3.5, 30));
-      ctx.save();
-      ctx.translate(CX, base);
-      ctx.transform(sx, 0, -sk, 1, 0, 0);
-      if (t < 3.0) rollText(t < 2.75 ? "SITI" : null, "SHOP", 0, 0, big, 480, w800(t), COL.k, 2.5, t, { spOld: 60 });
-      else if (t < 3.5) rollText(t < 3.25 ? "SHOP" : null, "APP", 0, 0, big, w800(t), w800(t), COL.k, 3.0, t);
-      else rollText(t < 3.75 ? "APP" : null, "BOT", 0, 0, big, w800(t), w800(t), COL.k, 3.5, t);
-      ctx.restore();
-    }
-    if (t >= 3.5) {
-      ctx.save();
-      ctx.translate(CX, base);
-      const ai = spring(t, 3.75, 30);
-      if (ai > 0) {
-        const tw = textW("BOT", w800(t), big);
-        ctx.font = font(800, 150);
-        ctx.fillStyle = COL.w;
+  const cam = cam3(t), depth = 76 * spring(t, 10.0, 14);
+  const items = [];
+  // la parola enorme dietro, su un piano lontano: si muove meno di tutto il resto
+  items.push({ z: cam.p([0, 0, -1100])[2], draw: () => {
+    const o = cam.p([0, 0, -1100]), ex = cam.p([100, 0, -1100]), ey = cam.p([0, -100, -1100]);
+    ctx.save();
+    ctx.transform((ex[0] - o[0]) / 100, (ex[1] - o[1]) / 100, (ey[0] - o[0]) / 100, (ey[1] - o[1]) / 100, o[0], o[1]);
+    const wg = 800 - 380 * spring(t, 12.5, 22) + 380 * spring(t, 13.0, 22);
+    ctx.font = font(wg, 800);
+    ctx.fillStyle = COL.v;
+    ctx.textAlign = "center";
+    ctx.fillText(t < 11 ? "3D" : t < 12 ? "UI" : "APP", 0, 280);
+    ctx.textAlign = "left";
+    ctx.restore();
+  } });
+  // tessere che galleggiano, alcune passano davanti all'obiettivo
+  TILES.forEach(([x, y, z, r, c, kind], i) => {
+    const pop = spring(t, 10.25 + i * 0.04, 20);
+    if (pop < 0.01) return;
+    const a = t * 0.6 + i;
+    const outline = kind === "c" ? circle(r * pop).filter((_, q) => q % 6 === 0) : rrect(r * 1.6 * pop, r * pop, 18);
+    const N = norm([Math.sin(a) * 0.5, Math.cos(a * 0.7) * 0.4, 1]);
+    const U = norm(cross([0, 1, 0], N)), V = cross(N, U);
+    const c3 = [x, y + 40 * Math.sin(t * 1.3 + i), z];
+    items.push({ z: cam.p(c3)[2], draw: () => prismFaces(cam, c3, U, V, N, outline, 34, c, [COL.w, COL.s, COL.v]).forEach((f) => fillQuad(cam, f.q, f.color)) });
+  });
+  // il telefono: corpo bianco, schermo nero, strati dell'app che si staccano in avanti
+  const body = rrect(PHONE_W, PHONE_H, PHONE_R);
+  items.push({ z: cam.p([0, 0, 0])[2], draw: () => {
+    prismFaces(cam, [0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], body, depth, COL.w, [COL.s, COL.v, COL.v]).forEach((f) => fillQuad(cam, f.q, f.color));
+    const sc = rrect(PHONE_W - 52, PHONE_H - 52, PHONE_R - 22).map(([x, y]) => [x, y, depth / 2 + 1]);
+    fillQuad(cam, sc.map(([x, y, z]) => [x, -y, z]), COL.k);
+  } });
+  LAYERS.forEach((L, i) => {
+    const ex = spring(t, 11.0 + i * 0.05, 13) - spring(t, 12.75 + i * 0.03, 16);
+    // sul mezzo battito gli strati si aprono anche di lato, a ventaglio
+    const fan = (i - 2) * 80 * (spring(t, 12.25, 20) - spring(t, 12.75, 18));
+    const z = depth / 2 + 4 + L.z * 0.75 * ex, cx = (L.x0 + L.x1) / 2 + fan, cy = (L.y0 + L.y1) / 2;
+    const c3 = [cx, -cy, z];
+    items.push({ z: cam.p(c3)[2] - 1, draw: () => {
+      if (L.dots) {
+        for (const dx of [-80, 0, 80]) prismFaces(cam, [dx, -360, z], [1, 0, 0], [0, 1, 0], [0, 0, 1], circle(18).filter((_, q) => q % 6 === 0), 12, L.c, [COL.w, COL.s, COL.v]).forEach((f) => fillQuad(cam, f.q, f.color));
+        return;
+      }
+      const out = rrect(L.x1 - L.x0, L.y1 - L.y0, 22);
+      const faces = prismFaces(cam, c3, [1, 0, 0], [0, 1, 0], [0, 0, 1], out, 14 + 10 * ex, L.c, [COL.w, COL.s, COL.v]);
+      faces.forEach((f) => fillQuad(cam, f.q, f.color));
+      if (L.score) {
+        // il "100" sulla scheda, steso sul piano della scheda
+        const o = cam.p([cx, -cy, z + 8]), ux = cam.p([cx + 100, -cy, z + 8]), uy = cam.p([cx, -cy - 100, z + 8]);
         ctx.save();
-        ctx.translate(tw / 2 + 30, -big * 0.42);
-        ctx.scale(ai, ai);
-        ctx.fillText("+AI", 0, 0);
+        ctx.transform((ux[0] - o[0]) / 100, (ux[1] - o[1]) / 100, (uy[0] - o[0]) / 100, (uy[1] - o[1]) / 100, o[0], o[1]);
+        scoreText({ x0: L.x0 - cx, x1: L.x1 - cx, y1: L.y1 - cy });
         ctx.restore();
       }
-      ctx.restore();
-    }
-    return;
-  }
-  // la griglia: sei parole che scorrono e si scambiano peso e colore
-  const maxW = Math.max(...GRID.flat().map((w) => textW(w, 800, 100))) / 100;
-  const gs = Math.min(200, 500 / maxW);
-  const cellW = CELL_W, rowY = [CY - 40, CY + 230];
-  const shiftR0 = -spring(t, 4.25, 22), shiftR1 = spring(t, 4.25, 22);
-  const leave = spring(t, 5.0, 30);
-  const leaveV = (spring(t, 5.0, 30) - spring(t - 1 / 60, 5.0, 30)) * 2200;
-  GRID.forEach((row, r) =>
-    row.forEach((word, c) => {
-      const idx = r * 3 + c;
-      if (word === "VIDEO" && t >= 5.0) return;
-      const sh = r === 0 ? shiftR0 : shiftR1;
-      const col = c + sh;
-      const wgt = lerp(800, idx % 2 ? 800 : 420, spring(t, 4.5, 22)) + 30 * kick(t);
-      const color = word === "AI" ? mixCol(COL.k, COL.w, spring(t, 4.75, 26)) : COL.k;
-      const tw = textW(word, wgt, gs);
-      // la parola che esce da un lato rientra dall'altro
-      for (const wrap of sh < -0.001 ? [0, 3] : sh > 0.001 ? [0, -3] : [0]) {
-        const cx = CX + (col + wrap - 1) * cellW;
-        if (Math.abs(cx - CX) > 1500) continue;
-        let x = cx - tw / 2;
-        if (word === "BOT") {
-          // BOT arriva dal centro della scena prima
-          const m = spring(t, 4.0, 20);
-          const sz = lerp(big, gs, m), w0 = textW("BOT", wgt, sz);
-          const fromX = CX - w0 / 2;
-          ctx.font = font(wgt, sz);
-          ctx.fillStyle = color;
-          if (wrap === 0) {
-            const bx = lerp(fromX, x, m), by = lerp(base, rowY[r], m);
-            smear(-(r === 0 ? -1 : 1) * leaveV * 0.7, 0, (sx) => ctx.fillText(word, bx + (r === 0 ? -1 : 1) * leave * 2200 + sx, by));
-          }
-          continue;
-        }
-        sliceText(word, x + (r === 0 ? -1 : 1) * leave * 2200, rowY[r], gs, wgt, color, 4.0 + idx * 0.04, t, r === 0 ? 1 : -1, { dist: 1600, vx: (r === 0 ? -1 : 1) * leaveV });
-      }
-    }),
-  );
-  if (t >= 5.0) drawVideoWord(t, gs, cellW, rowY);
-}
-function videoState(t, gs, cellW, rowY) {
-  const m = spring(t, 5.07, 22);
-  const sz = lerp(gs, 300, m);
-  // VIDEO dopo lo scorrimento della seconda riga sta nella prima colonna
-  const startX = CX - cellW - textW("VIDEO", 800, gs) / 2;
-  const fullW = textW("VIDEO", 800, sz), tw = textW("VIDE", 800, sz);
-  const x0 = lerp(startX, CX - fullW / 2, m);
-  const y = lerp(rowY[1], CY + 110, m);
-  ctx.font = font(800, sz);
-  const mo = ctx.measureText("O");
-  // l'anello prende le misure della O: centro, larghezza, altezza, spessore del tratto
-  const rx = (mo.actualBoundingBoxLeft + mo.actualBoundingBoxRight) / 2, ry = (mo.actualBoundingBoxAscent + mo.actualBoundingBoxDescent) / 2;
-  const ox = x0 + tw - mo.actualBoundingBoxLeft + rx, oy = y - mo.actualBoundingBoxAscent + ry;
-  const split = spring(t, 5.25, 20);
-  const R = lerp(ry, 190, split);
-  return { sz, x0, y, tw, split, rx: lerp(rx, R, split), ry: R, ocx: lerp(ox, CX + 260, split), ocy: lerp(oy, CY, split), thick: lerp(sz * 0.15, R, spring(t, 5.25, 16)) };
-}
-function drawVideoWord(t, gs, cellW, rowY) {
-  const s = videoState(t, gs, cellW, rowY);
-  ctx.font = font(800, s.sz * (1 - 0.45 * s.split));
-  ctx.fillStyle = COL.k;
-  ctx.fillText("VIDE", lerp(s.x0, CX - 420, s.split), lerp(s.y, CY + 60, s.split));
-  ctx.beginPath();
-  ctx.ellipse(s.ocx, s.ocy, s.rx, s.ry, 0, 0, Math.PI * 2);
-  const ir = Math.max(0, s.ry - s.thick);
-  if (ir > 0.5) ctx.ellipse(s.ocx, s.ocy, Math.max(0, s.rx - s.thick), ir, 0, 0, Math.PI * 2, true);
-  ctx.fill("evenodd");
-}
-function typePortal(t) {
-  const maxW = Math.max(...GRID.flat().map((w) => textW(w, 800, 100))) / 100;
-  const gs = Math.min(200, 500 / maxW);
-  const s = videoState(t, gs, CELL_W, [CY - 40, CY + 230]);
-  return { kind: "circle", x: s.ocx, y: s.ocy, r: s.ry, color: COL.k };
-}
-
-/* ------------------------------------------------------------------ */
-/* scena 3 · le forme, poi il 3D                                        */
-/* ------------------------------------------------------------------ */
-const SHAPES = [
-  { t: 6.0, pts: SH.dot, col: COL.w, label: "idea" },
-  { t: 6.5, pts: SH.web, col: COL.w, label: "web" },
-  { t: 7.0, pts: SH.bag, col: COL.g, label: "shop" },
-  { t: 7.5, pts: SH.phone, col: COL.w, label: "app" },
-  { t: 8.0, pts: SH.bubble, col: COL.s, label: "bot" },
-  { t: 8.5, pts: SH.play, col: COL.g, label: "video" },
-  { t: 9.0, pts: SH.star, col: COL.v, label: "AI" },
-  { t: 9.5, pts: SH.phone, col: COL.w, label: "" },
-];
-const SHAPE_Y = CY - 50;
-function shapeAt(t) {
-  let i = 0;
-  while (i < SHAPES.length - 1 && t >= SHAPES[i + 1].t) i++;
-  const a = SHAPES[Math.max(0, i - 1)], b = SHAPES[i];
-  const m = i === 0 ? 1 : spring(t, b.t, 22);
-  const pts = b.pts.map((p, k) => [lerp(a.pts[k][0], b.pts[k][0], m), lerp(a.pts[k][1], b.pts[k][1], m)]);
-  return { i, pts, col: mixCol(a.col, b.col, m), m };
+    } });
+  });
+  items.sort((a, b) => b.z - a.z);
+  for (const it of items) it.draw();
 }
 function drawShapes(t) {
+  const T = Math.max(t, 6.0);
+  ctx.save();
+  zoomAt(1 + 0.03 * spring(T, 6.0, 10) + 0.008 * (T - 6));
+  if (T >= 10.0) { ctx.restore(); ctx.save(); zoomAt(1 + 0.03 + 0.008 * 4); drawPhone3D(T); ctx.restore(); return; }
   bg(COL.k);
-  const push = 1 + 0.025 * Math.max(0, t - 6);
-  ctx.save();
-  ctx.translate(CX, CY);
-  ctx.scale(push, push);
-  ctx.translate(-CX, -CY);
-  const s = shapeAt(t);
-  const cur = SHAPES[s.i];
-  // la forma gira appena durante il passaggio, nel verso del cambio
-  const turn = (1 - s.m) * 0.25 * (s.i % 2 ? 1 : -1);
-  ctx.save();
-  ctx.translate(CX, SHAPE_Y);
-  ctx.rotate(turn);
-  fillPts(s.pts, 0, 0, 1, s.col);
-  // dettagli: compaiono sul mezzo battito, spariscono al cambio successivo
-  const next = SHAPES[s.i + 1]?.t ?? 99;
-  const a = spring(t, cur.t + 0.25, 28) * (1 - spring(t, next, 40));
-  if (a > 0.01) shapeDetails(cur.label, a, t, cur.t);
-  ctx.restore();
-  // l'etichetta rotola sul mezzo battito
-  const at = (k) => SHAPES[k].t + 0.04;
-  let li = 0;
-  while (li < SHAPES.length - 1 && t >= at(li + 1)) li++;
-  const lt = at(li);
-  const label = SHAPES[li].label;
-  const prev = li > 0 && t < lt + 0.4 ? SHAPES[li - 1].label : null;
-  if (label || prev) rollText(prev, label, CX, CY + 420, 84, 600, 600, COL.s, lt, t);
+  const S = morphState(T);
+  chrome(COL.s, `cosa faccio — ${String(Math.min(6, S.i + 1)).padStart(2, "0")}/06`, "Renato Manzotti", T, false);
+  // la forma, con il mosso del suo cambio
+  ctx.fillStyle = S.K.sh === "phone" ? COL.w : S.m < 0.5 ? MORPH[Math.max(0, S.i - 1)].col : S.K.col;
+  heroPath(S);
+  ctx.fill();
+  details(S, T);
+  labelOverShape(S, T);
+  tokens(S, T);
   ctx.restore();
 }
-function shapeDetails(label, a, t, t0) {
-  ctx.save();
-  ctx.scale(a, a);
-  if (label === "web") {
-    ctx.fillStyle = COL.k;
-    ctx.fillRect(-330, -150, 660, 6);
-    [COL.v, COL.g, COL.s].forEach((c, i) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(-290 + i * 34, -180, 10, 0, 7); ctx.fill(); });
-    ctx.fillStyle = COL.v;
-    ctx.fillRect(-270, -100, 300 * spring(t, t0 + 0.3, 20), 46);
-    ctx.fillStyle = COL.k;
-    ctx.fillRect(-270, -20, 460 * spring(t, t0 + 0.35, 20), 18);
-    ctx.fillRect(-270, 20, 380 * spring(t, t0 + 0.4, 20), 18);
-    ctx.fillStyle = COL.g;
-    ctx.fillRect(-270, 80, 180 * spring(t, t0 + 0.42, 20), 52);
-  } else if (label === "shop") {
-    ctx.strokeStyle = COL.g;
-    ctx.lineWidth = 26;
-    ctx.beginPath();
-    ctx.arc(0, -130, 80, Math.PI, 0);
-    ctx.stroke();
-    ctx.fillStyle = COL.k;
-    ctx.font = font(800, 120);
-    ctx.textAlign = "center";
-    ctx.fillText("€", 0, 100);
-    ctx.textAlign = "left";
-  } else if (label === "app") {
-    ctx.fillStyle = COL.k;
-    ctx.beginPath();
-    ctx.roundRect(-55, -280, 110, 26, 13);
-    ctx.fill();
-    ctx.fillStyle = COL.v;
-    ctx.beginPath();
-    ctx.roundRect(-110, -200, 220, 150, 22);
-    ctx.fill();
-    ctx.fillStyle = COL.g;
-    ctx.beginPath();
-    ctx.roundRect(-110, -30, 220, 70, 18);
-    ctx.fill();
-    ctx.fillStyle = COL.k;
-    ctx.beginPath();
-    ctx.roundRect(-110, 60, 150, 26, 13);
-    ctx.fill();
-  } else if (label === "bot") {
-    for (let i = 0; i < 3; i++) {
-      const lit = Math.floor((t - t0) / 0.125) % 3 === i;
-      ctx.fillStyle = COL.k;
-      ctx.beginPath();
-      ctx.arc(-80 + i * 80, -30, lit ? 26 : 18, 0, 7);
-      ctx.fill();
-    }
-  } else if (label === "video") {
-    ctx.strokeStyle = COL.k;
-    ctx.lineWidth = 14;
-    ctx.beginPath();
-    ctx.arc(24, 0, 70, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * spring(t, t0 + 0.3, 14));
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-// il 3D: il telefono prende spessore, si apre a strati, si sdraia tra le altre tessere
-const PHONE = rrect(300, 600, 52).map(([x, y]) => [x, y]);
-const PHONE_LAYERS = [
-  { o: rrect(220, 150, 22), y: -125, c: COL.v, z: 70 },
-  { o: rrect(220, 70, 18), y: -5, c: COL.g, z: 140 },
-  { o: rrect(150, 26, 13), y: 75, c: COL.k, z: 210, x: -35 },
-  { o: rrect(110, 26, 13), y: -267, c: COL.k, z: 30 },
-  { o: rrect(240, 90, 30), y: 180, c: COL.s, z: 290 },
-];
-const TILES = [
-  { o: rrect(230, 150, 22), c: COL.w, ang: 0, h: [90, 120] },
-  { o: rrect(160, 160, 26), c: COL.g, ang: 1, h: [160, 420] },
-  { o: rrect(220, 150, 50), c: COL.s, ang: 2, h: [230, 180] },
-  { o: rrect(170, 170, 85), c: COL.v, ang: 3, h: [300, 260] },
-  { o: rrect(200, 140, 22), c: COL.w, ang: 4, h: [370, 220] },
-];
-const TILE_R = 430;
-function tilePos(i) { const a = -Math.PI / 2 + (i + 0.5) * ((Math.PI * 2) / 5) + 0.3; return [Math.cos(a) * TILE_R, 0, Math.sin(a) * TILE_R]; }
-function cam3At(t) {
-  const push = 1 + 0.025 * 3.75;
-  const F = 1500, dist = F / push;
-  const az = -0.48 * spring(t, 10.0, 10) - 0.32 * spring(t, 10.75, 10) + 1.0 * spring(t, 11.5, 9) - 0.2 * spring(t, 12.0, 8) + 0.0;
-  let el = 0.32 * spring(t, 10.5, 10) - 0.12 * spring(t, 11.5, 10) + 0.55 * spring(t, 12.0, 8) + 0.8 * spring(t, 13.0, 10);
-  let dd = dist + 380 * spring(t, 12.0, 7) + 120 * spring(t, 12.5, 8) - 300 * spring(t, 13.0, 9);
-  const green = tilePos(1), gh = tileHeight(1, t);
-  const tgt = [lerp(0, green[0], spring(t, 13.0, 10)), lerp(-50, gh, spring(t, 13.0, 10)), lerp(0, green[2], spring(t, 13.0, 10))];
-  const azF = lerp(az, 0, spring(t, 13.0, 10));
-  return camera3(tgt, azF, el, dd, F);
-}
-function tileHeight(i, t) { const T = TILES[i]; return lerp(4, T.h[0], spring(t, 12.5 + i * 0.05, 14)) + (T.h[1] - T.h[0]) * spring(t, 13.0, 14); }
-function draw3D(t) {
-  bg(COL.k);
-  const cam = cam3At(t);
-  const depth = 56 * spring(t, 9.85, 14);
-  const lie = spring(t, 12.0, 9);
-  // orientamento del telefono: in piedi, poi sdraiato con lo schermo verso l'alto
-  const U = [1, 0, 0], V = rotX([0, 1, 0], -lie * Math.PI / 2), N = rotX([0, 0, 1], -lie * Math.PI / 2);
-  const c = [0, lerp(0, depth / 2, lie), 0];
-  const objs = [];
-  // le tessere attorno, sul pavimento
-  TILES.forEach((T, i) => {
-    const appear = spring(t, 12.0 + i * 0.06, 20);
-    if (appear < 0.01) return;
-    const p = tilePos(i), h = tileHeight(i, t);
-    objs.push({ z: cam.p(p)[2], draw: () => prism(cam, [p[0], h / 2, p[2]], [1, 0, 0], [0, 0, -1], [0, 1, 0], T.o, h, T.c, T.c, appear) });
-  });
-  objs.push({ z: cam.p(c)[2], draw: () => drawPhone3(cam, t, c, U, V, N, depth) });
-  objs.sort((a, b) => b.z - a.z).forEach((o) => o.draw());
-}
-function drawPhone3(cam, t, c, U, V, N, depth) {
-  prism(cam, c, U, V, N, PHONE, depth, COL.w, COL.v);
-  const explode = spring(t, 10.5, 12) * (1 - spring(t, 11.75, 12));
-  const pop = spring(t, 11.25, 16) * (1 - spring(t, 11.75, 12));
-  const flip = spring(t, 11.0, 24) * (1 - spring(t, 11.75, 20));
-  const swap = [COL.g, COL.v, COL.k, COL.k, COL.s];
-  PHONE_LAYERS.forEach((L, i) => {
-    const a = spring(t, 10.25 + i * 0.05, 26);
-    if (a < 0.01) return;
-    const z = depth / 2 + 2 + (L.z + (i === 4 ? 160 * pop : 0)) * explode;
-    const cc = addv(addv(c, mul(V, -L.y)), addv(mul(N, z), mul(U, L.x ?? 0)));
-    const col = flip > 0.5 ? swap[i] : L.c;
-    prism(cam, cc, U, V, N, L.o, 6 + 10 * explode, col, col, a);
-  });
-}
-function portal3D(t) {
-  const cam = cam3At(t);
-  const p = tilePos(1), h = tileHeight(1, t);
-  const top = TILES[1].o.map(([x, y]) => cam.p([p[0] + x, h, p[2] + y]));
-  const xs = top.map((q) => q[0]), ys = top.map((q) => q[1]);
-  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-  // il rettangolo inscritto nella faccia superiore (vista dall'alto: quasi un quadrato)
-  const inset = 0.12;
-  return { kind: "rect", x: lerp(x0, x1, inset), y: lerp(y0, y1, inset), w: (x1 - x0) * (1 - 2 * inset), h: (y1 - y0) * (1 - 2 * inset), r: 0, color: COL.g, poly: top };
-}
-function drawShapes3D(t) { if (t < 9.85) drawShapes(t); else draw3D(t); }
+const phonePush = () => 1 + 0.03 + 0.008 * 4;
+const phonePortal = (t) => {
+  const cam = cam3(t), depth = 76, L = LAYERS[2], s = phonePush();
+  const ex = spring(t, 11.0 + 2 * 0.05, 13) - spring(t, 12.75 + 2 * 0.03, 16), z = depth / 2 + 4 + L.z * 0.75 * ex + 7 + 10 * ex;
+  const a = cam.p([L.x0, -L.y0, z]), b = cam.p([L.x1, -L.y1, z]);
+  const x0 = Math.min(a[0], b[0]), x1 = Math.max(a[0], b[0]), y0 = Math.min(a[1], b[1]), y1 = Math.max(a[1], b[1]);
+  return { kind: "rect", x: CX + (x0 - CX) * s, y: CY + (y0 - CY) * s, w: (x1 - x0) * s, h: (y1 - y0) * s, r: 22 * s };
+};
 
 /* ------------------------------------------------------------------ */
-/* scena 4 · i dati: Lighthouse a 100                                   */
+/* manifesto 4 · i dati: un 100 enorme e un anello che si riempie       */
 /* ------------------------------------------------------------------ */
-const GAUGES = [
-  { t: 14.0, label: "velocità" },
-  { t: 14.5, label: "SEO" },
-  { t: 15.0, label: "accessibile" },
-  { t: 15.25, label: "qualità" },
-];
-const G_R = 140, G_Y = CY - 30;
-const gx = (i) => CX + (i - 1.5) * 430;
-function odometer(v, x, y, size, color) {
-  ctx.font = font(700, size);
-  const dw = ctx.measureText("0").width, lh = size * 1.05;
-  const n = Math.floor(v), frac = v - n;
-  const digits = Math.max(1, String(Math.min(100, n + (frac > 0.01 ? 1 : 0))).length);
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x - (dw * digits) / 2 - 10, y - size * 0.86, dw * digits + 20, lh);
-  ctx.clip();
-  ctx.fillStyle = color;
-  ctx.textAlign = "center";
-  for (let p = 0; p < digits; p++) {
-    const pow = Math.pow(10, p);
-    const d = Math.floor(n / pow) % 10;
-    const r = p === 0 ? frac : (n % pow) === pow - 1 ? frac : 0;
-    const cx = x + (digits / 2 - p - 0.5) * dw;
-    if (p > 0 && n < pow && !(n + 1 >= pow && r > 0)) continue;
-    // la cifra in testa che sta arrivando (es. l'1 di 100) entra senza uno zero davanti
-    if (!(p > 0 && n < pow)) ctx.fillText(String(d), cx, y - r * lh);
-    if (r > 0) ctx.fillText(String((d + 1) % 10), cx, y + (1 - r) * lh);
-  }
-  ctx.restore();
-  ctx.textAlign = "left";
-}
-function gaugeFill(i, t) { return expoOut(prog(t, GAUGES[i].t, GAUGES[i].t + 0.42)); }
+const METRICS = [{ t: 14.0, n: "velocità" }, { t: 14.25, n: "SEO" }, { t: 14.75, n: "accessibile" }];
+const RING = { x: 1430, y: 520, R: 320, th: 104 };
+const dataPush = (t) => 1 + 0.03 * spring(t, 14.0, 10) + 0.01 * (t - 14);
 function drawData(t) {
-  bg(COL.g);
-  const push = 1 + 0.03 * Math.max(0, t - 14);
+  const T = Math.max(t, 14.0);
   ctx.save();
-  ctx.translate(CX, CY);
-  ctx.scale(push, push);
-  ctx.translate(-CX, -CY);
-  // titolo
-  const head = spring(t, 14.25, 26);
-  if (head > 0) {
-    ctx.globalAlpha = head;
-    ctx.font = font(700, 54);
+  zoomAt(dataPush(T));
+  bg(COL.g);
+  chrome(COL.k, "Lighthouse — risultati", "Renato Manzotti", T);
+  let i = 0;
+  while (i < METRICS.length - 1 && T >= METRICS[i + 1].t) i++;
+  const M = METRICS[i];
+  // ogni metrica riparte da zero e atterra sul 100 esattamente sul battito
+  const f = i === 0 ? 1 : expoOut(prog(T, M.t, M.t + 0.25));
+  const f0 = i === 0 ? 1 : expoOut(prog(T - 1 / 180, M.t, M.t + 0.25));
+  const val = Math.round(100 * f);
+  const size = fit("100", 800, 900, 560), base = 690;
+  ctx.fillStyle = COL.k;
+  ctx.font = font(800, size);
+  smear(0, (f - f0) * -120, (sx, sy) => ctx.fillText(String(val), 104, base + sy));
+  roll(i ? METRICS[i - 1].n : "", M.n, 112, 860, 116, 800, COL.k, i ? M.t : 13.0, T, "left");
+  // l'anello: binario sottile, riempimento pieno viola
+  ctx.strokeStyle = COL.k;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.arc(RING.x, RING.y, RING.R, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = COL.v;
+  ctx.lineWidth = RING.th;
+  ctx.lineCap = "butt";
+  ctx.beginPath();
+  ctx.arc(RING.x, RING.y, RING.R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.0001, f));
+  ctx.stroke();
+  // le tre barre in alto a destra: una per metrica
+  METRICS.forEach((m, j) => {
+    const v = j < i ? 1 : j === i ? f : 0, x = 1260, y = 176 + j * 34;
     ctx.fillStyle = COL.k;
-    ctx.textAlign = "center";
-    ctx.fillText("Lighthouse", CX, 190 + 30 * (1 - head));
-    ctx.textAlign = "left";
-    ctx.globalAlpha = 1;
-  }
-  GAUGES.forEach((g, i) => {
-    const appear = spring(t, 14.0 + i * 0.06, 24);
-    if (appear < 0.01) return;
-    const x = gx(i), f = gaugeFill(i, t);
-    const close = i === 3 ? spring(t, 15.5, 16) : 0;
-    ctx.save();
-    ctx.translate(x, G_Y);
-    ctx.scale(appear, appear);
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "rgba(6,6,8,0.22)";
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.arc(0, 0, G_R, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.strokeStyle = COL.k;
-    ctx.lineWidth = 26;
-    if (f > 0.002) {
-      ctx.beginPath();
-      ctx.arc(0, 0, G_R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * f);
-      ctx.stroke();
-    }
-    odometer(100 * f, 0, 34, 104, COL.k);
-    if (close > 0) {
-      // l'anello si chiude verso il centro: diventa un disco
-      ctx.fillStyle = COL.k;
-      ctx.beginPath();
-      ctx.arc(0, 0, G_R + 13, 0, Math.PI * 2);
-      ctx.arc(0, 0, Math.max(0, (G_R - 13) * (1 - close)), 0, Math.PI * 2, true);
-      ctx.fill("evenodd");
-    }
-    ctx.restore();
-    const lt = spring(t, g.t + 0.25, 26);
-    if (lt > 0 && i < 3) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(x - 220, G_Y + 200, 440, 70);
-      ctx.clip();
-      ctx.font = font(600, 44);
-      ctx.fillStyle = COL.k;
-      ctx.textAlign = "center";
-      ctx.fillText(g.label, x, G_Y + 252 + 70 * (1 - lt));
-      ctx.restore();
-      ctx.textAlign = "left";
-    }
-    if (i === 3) {
-      const l4 = spring(t, 15.25, 26) * (1 - close);
-      if (l4 > 0) { ctx.globalAlpha = l4; ctx.font = font(600, 44); ctx.fillStyle = COL.k; ctx.textAlign = "center"; ctx.fillText(g.label, x, G_Y + 252); ctx.textAlign = "left"; ctx.globalAlpha = 1; }
-    }
+    ctx.fillRect(x, y, 560, 4);
+    ctx.fillRect(x, y - 8, 560 * v, 20);
   });
   ctx.restore();
 }
-function dataPortal(t) {
-  const push = 1 + 0.03 * Math.max(0, t - 14);
-  return { kind: "circle", x: CX + (gx(3) - CX) * push, y: CY + (G_Y - CY) * push, r: (G_R + 13) * push, color: COL.k };
-}
+const dataPortal = (t) => { const s = dataPush(t); return { kind: "circle", x: CX + (RING.x - CX) * s, y: CY + (RING.y - CY) * s, r: (RING.R - RING.th / 2) * s }; };
 
 /* ------------------------------------------------------------------ */
-/* scena 5 · la rete del preventivo, il volo, il nome                   */
+/* manifesto 5 · la rete del preventivatore: il volo                    */
 /* ------------------------------------------------------------------ */
-const NODES = (() => {
-  const n = [{ id: "tu", p: [0, 0, 1000], r: 92, c: COL.w, label: "tu", t: 16.0 }];
-  ["sito", "shop", "app", "bot"].forEach((l, i) => { const a = Math.PI / 4 + (i * Math.PI) / 2; n.push({ id: l, p: [Math.cos(a) * 430, Math.sin(a) * 290, 1000], r: 58, c: [COL.v, COL.g, COL.s, COL.w][i], label: l, t: 16.0 + i * 0.05 }); });
-  ["AI", "video", "SEO", "100"].forEach((l, i) => { const a = (i * Math.PI) / 2; n.push({ id: l, p: [Math.cos(a) * 660, Math.sin(a) * 380, 1150], r: 48, c: [COL.g, COL.s, COL.v, COL.g][i], label: l, t: 16.25 + i * 0.05 }); });
-  // più in profondità: quello che i servizi fanno succedere
-  [["ordini", [-760, -520, 1550], COL.g], ["chat", [820, 420, 1750], COL.s], ["prenota", [-900, 420, 1980], COL.v], ["paga", [430, -360, 2200], COL.w]].forEach(([l, p, c], i) => n.push({ id: l, p, r: 62, c, label: l, t: 16.5 + i * 0.05 }));
-  ["Google", "WhatsApp", "Instagram", "Maps"].forEach((l, i) => { const a = 0.4 + (i * Math.PI) / 2; n.push({ id: l, p: [Math.cos(a) * 820, Math.sin(a) * 470, 2650], r: 80, c: [COL.w, COL.g, COL.s, COL.v][i], label: l, t: 16.75 + i * 0.05 }); });
-  n.push({ id: "clienti", p: [-330, 210, 3560], r: 150, c: COL.g, label: "clienti", t: 17.0 });
-  [[-260, -380, 1350], [420, 300, 1450], [-700, 160, 1650], [300, -260, 1850], [-140, 430, 2050], [760, -60, 2350], [-430, -90, 2500], [180, 420, 2800], [-760, -360, 2950], [620, 380, 3150], [40, -440, 3300]].forEach((p, i) => n.push({ id: "d" + i, p, r: 22, c: [COL.v, COL.s, COL.g][i % 3], t: 16.5 + i * 0.03 }));
-  return n;
-})();
-const byId = Object.fromEntries(NODES.map((n) => [n.id, n]));
-const LINKS = [
-  ...["sito", "shop", "app", "bot"].map((id) => ["tu", id, 16.0]),
-  ["sito", "AI", 16.25], ["shop", "video", 16.25], ["app", "SEO", 16.25], ["bot", "100", 16.25], ["AI", "shop", 16.5], ["video", "app", 16.5], ["SEO", "bot", 16.5], ["100", "sito", 16.5],
-  ["ordini", "shop", 16.5], ["chat", "bot", 16.55], ["prenota", "app", 16.6], ["paga", "sito", 16.65],
-  ["Google", "sito", 16.75], ["WhatsApp", "chat", 16.8], ["Instagram", "video", 16.85], ["Maps", "prenota", 16.9],
-  ["clienti", "Google", 17.0], ["clienti", "WhatsApp", 17.0], ["clienti", "Instagram", 17.0], ["clienti", "Maps", 17.0],
-  ["d0", "ordini", 16.6], ["d1", "chat", 16.6], ["d2", "prenota", 16.6], ["d3", "paga", 16.6], ["d5", "Maps", 16.9], ["d6", "Google", 16.9], ["d9", "clienti", 17.0],
-];
-function camZ(t) {
-  // avanza piano, poi accelera e attraversa la rete
-  return 160 * prog(t, 16.0, 16.8) + 3150 * Math.pow(prog(t, 16.75, 18.0), 2.0);
+const NAMES = ["sito", "shop", "app", "bot", "AI", "video", "SEO", "motion", "ordini", "chat", "prenota", "paga", "catalogo", "login", "recensioni", "newsletter", "dominio", "hosting", "Google", "WhatsApp", "Instagram", "Maps", "TikTok", "email"];
+const PAL = [COL.v, COL.g, COL.s, COL.w];
+const NODES = [{ id: "tu", p: [0, 0, 700], r: 120, c: COL.w }];
+NAMES.forEach((id, i) => {
+  // i primi quattro attorno a "tu", poi una spirale che si stringe verso il fondo
+  const first = i < 4, a = first ? Math.PI / 4 + (i * Math.PI) / 2 : i * 2.39996 + 0.6;
+  const z = first ? 980 : 1180 + (i - 4) * 135, rad = first ? 520 : 470 + 150 * Math.sin(i * 1.7);
+  NODES.push({ id, p: [Math.cos(a) * rad * 1.25, Math.sin(a) * rad * 0.78, z], r: first ? 100 : 96 + (i % 4) * 14, c: PAL[i % 4], from: first ? "tu" : NAMES[i - 4] });
+});
+// il fondo: "clienti", con i canali attorno
+NODES.push({ id: "clienti", p: [0, 0, 4150], r: 300, c: COL.g, from: "Maps" });
+const DOTS = Array.from({ length: 44 }, (_, i) => {
+  const a = i * 2.39996, d = 380 + ((i * 397) % 700);
+  return { p: [Math.cos(a) * d * 1.3, Math.sin(a) * d * 0.8, 800 + i * 90], r: 14 + (i % 3) * 6, c: [COL.s, COL.v, COL.w][i % 3] };
+});
+const NODE = Object.fromEntries(NODES.map((n) => [n.id, n]));
+const netPush = (t) => 1 + 0.025 * spring(t, 16.0, 10);
+function netCam(t) {
+  const z = 380 * spring(t, 16.0, 7) + 3420 * Math.pow(prog(t, 16.15, 17.75), 1.65);
+  const roll = 0.15 * spring(t, 16.5, 10) - 0.3 * spring(t, 17.0, 10) + 0.15 * spring(t, 17.45, 12);
+  const x = 110 * Math.sin((t - 16) * 2.4) * (1 - prog(t, 17.2, 17.6)), y = -60 * Math.sin((t - 16) * 1.7) * (1 - prog(t, 17.2, 17.6));
+  return { x, y, z, roll, F: 1100 };
 }
-const camXY = (t) => { const u = Math.pow(prog(t, 16.75, 18.0), 1.4); return [-300 * u, 190 * u]; };
-function nodeScreen(n, t) {
-  const z = n.p[2] - camZ(t);
-  if (z < 60) return null;
-  const s = 1000 / z, [ox, oy] = camXY(t);
-  return { x: CX + (n.p[0] - ox) * s, y: CY + (n.p[1] - oy) * s, s, z, near: clamp((z - 60) / 260) };
+function pj(c, p) {
+  const dz = p[2] - c.z;
+  if (dz < 60) return null;
+  const s = c.F / dz, x = (p[0] - c.x) * s, y = (p[1] - c.y) * s, cr = Math.cos(c.roll), sr = Math.sin(c.roll);
+  return [CX + x * cr - y * sr, CY + x * sr + y * cr, s];
 }
-const sstepC = (a, b, x) => { const u = clamp((x - a) / (b - a)); return u * u * (3 - 2 * u); };
-const collapse = (t) => spring(t, 18.0, 30);
-function drawNodes(t) {
+const popT = (n) => (n.p[2] <= 1300 ? 15.0 : 16.0 + (n.p[2] - 1300) * 0.0004);
+function drawNet(t) {
+  const T = Math.max(t, 16.0);
+  ctx.save();
+  zoomAt(netPush(T));
   bg(COL.k);
-  const col = collapse(t);
-  const vis = (n) => spring(t, n.t, 26);
-  // i collegamenti, con i puntini che corrono verso il centro
+  const c = netCam(T);
+  // i collegamenti: si tracciano dal genitore al figlio
+  ctx.strokeStyle = COL.s;
   ctx.lineCap = "round";
-  for (const [a, b, t0] of LINKS) {
-    const A = nodeScreen(byId[a], t), B = nodeScreen(byId[b], t);
-    if (!A || !B) continue;
-    const g = spring(t, t0, 18) * (1 - col);
+  for (const n of NODES) {
+    if (!n.from) continue;
+    const a = pj(c, NODE[n.from].p), b = pj(c, n.p);
+    if (!a || !b) continue;
+    const g = n.p[2] <= 1300 ? spring(T, 16.25, 18) : spring(T, popT(n) + 0.08, 18);
     if (g < 0.01) continue;
-    const ex = lerp(A.x, B.x, g), ey = lerp(A.y, B.y, g);
-    ctx.strokeStyle = "rgba(199,155,255,0.5)";
-    ctx.lineWidth = Math.max(2, 4 * Math.min(A.s, B.s));
+    ctx.lineWidth = Math.max(1.5, 5 * Math.min(a[2], b[2]));
     ctx.beginPath();
-    ctx.moveTo(A.x, A.y);
-    ctx.lineTo(ex, ey);
+    ctx.moveTo(a[0], a[1]);
+    ctx.lineTo(lerp(a[0], b[0], g), lerp(a[1], b[1], g));
     ctx.stroke();
-    if (g > 0.99) {
-      const u = ((t * 1.6 + (a.length + b.length) * 0.13) % 1);
-      ctx.fillStyle = COL.g;
-      ctx.beginPath();
-      ctx.arc(lerp(B.x, A.x, u), lerp(B.y, A.y, u), Math.max(3, 6 * Math.min(A.s, B.s)), 0, 7);
-      ctx.fill();
-    }
   }
-  // i nodi, dal più lontano al più vicino
-  const list = NODES.map((n) => ({ n, S: nodeScreen(n, t), S0: nodeScreen(n, t - 1 / 90) })).filter((o) => o.S).sort((a, b) => b.S.z - a.S.z);
-  for (const { n, S, S0 } of list) {
-    const a = vis(n) * S.near;
-    if (a < 0.01) continue;
-    let x = S.x, y = S.y, r = n.r * S.s * a;
-    // il collasso: tutto finisce su una linea
-    x = lerp(x, CX + (x - CX) * 0.6, col);
-    y = lerp(y, CY, col);
-    r = lerp(r, 3, col);
-    const dx = S0 ? S.x - S0.x : 0, dy = S0 ? S.y - S0.y : 0;
+  // i nodi dal più lontano al più vicino: dischi pieni con l'etichetta dentro
+  const all = [...DOTS.map((d) => ({ ...d, dot: true })), ...NODES];
+  all.sort((a, b) => b.p[2] - a.p[2]);
+  for (const n of all) {
+    const q = pj(c, n.p);
+    if (!q) continue;
+    const pop = n.dot ? spring(T, 16.0 + (n.p[2] % 400) * 0.001, 16) : spring(T, popT(n), 22);
+    const r = n.r * q[2] * pop;
+    if (r < 0.5 || q[0] + r < -200 || q[0] - r > W + 200 || q[1] + r < -200 || q[1] - r > H + 200) continue;
     ctx.fillStyle = n.c;
-    ctx.globalAlpha = 1 - sstepC(0.75, 1, col);
-    smear(-dx * 0.8, -dy * 0.8, (sx, sy) => { ctx.beginPath(); ctx.arc(x + sx, y + sy, Math.max(0.5, r), 0, 7); ctx.fill(); });
-    const near = n.id === "tu" || n.id === "clienti" ? 1 : clamp((S.s - 0.5) / 0.25);
-    if (n.label && col < 0.5 && r > 6 && near > 0.01) {
-      const fs = clamp(36 * S.s * (n.id === "tu" ? 1.3 : 1), 24, 220) * a;
-      ctx.font = font(n.id === "tu" ? 800 : 600, fs);
-      ctx.textAlign = "center";
-      ctx.globalAlpha = Math.max(0, 1 - col * 2) * near;
-      if (n.id === "tu") { ctx.fillStyle = COL.k; ctx.fillText(n.label, x, y + fs * 0.34); }
-      else { ctx.fillStyle = COL.w; ctx.fillText(n.label, x, y + r + fs * 1.05); }
-      ctx.globalAlpha = 1;
-      ctx.textAlign = "left";
-    }
-  }
-  // il prezzo sotto "tu" sale man mano che la rete cresce
-  const tu = nodeScreen(byId.tu, t);
-  if (tu && col < 0.5) {
-    const pv = lerp(900, 4500, expoOut(prog(t, 16.75, 17.35)));
-    const show = spring(t, 16.75, 26);
-    if (show > 0.01) {
-      const fs = 46 * tu.s;
-      ctx.globalAlpha = show * (1 - col * 2);
-      ctx.font = font(700, fs);
-      const label = `${(Math.round(pv / 50) * 50).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} €`;
-      const pw = textW("4.500 €", 700, fs) + fs * 0.9, py = tu.y + 92 * tu.s + fs * 0.35;
+    ctx.beginPath();
+    ctx.arc(q[0], q[1], r, 0, Math.PI * 2);
+    ctx.fill();
+    if (n.dot) continue;
+    if (n.id === "clienti" && T >= 17.25) {
+      // il disco diventa un anello: dentro c'è già il titolo
       ctx.fillStyle = COL.k;
       ctx.beginPath();
-      ctx.roundRect(tu.x - pw / 2, py, pw, fs * 1.4, fs * 0.7);
+      ctx.arc(q[0], q[1], r * 0.9, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = COL.g;
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      ctx.fillStyle = COL.g;
-      ctx.textAlign = "center";
-      ctx.fillText(label, tu.x, py + fs * 1.06);
-      ctx.textAlign = "left";
-      ctx.globalAlpha = 1;
+      continue;
+    }
+    const fs = (n.id.length > 6 ? 0.34 : 0.44) * r;
+    if (fs < 6) continue;
+    ctx.font = font(800, fs);
+    ctx.fillStyle = n.c === COL.v ? COL.w : COL.k;
+    ctx.textAlign = "center";
+    ctx.save();
+    ctx.translate(q[0], q[1]);
+    ctx.rotate(c.roll);
+    ctx.fillText(n.id, 0, fs * 0.36);
+    ctx.restore();
+    ctx.textAlign = "left";
+    if (n.id === "tu") {
+      // il preventivo: un cartellino che si stacca dal nodo
+      const k = spring(T, 16.25, 26);
+      if (k > 0.01 && q[2] < 2.6) {
+        const s = q[2] * k;
+        ctx.save();
+        ctx.translate(q[0], q[1]);
+        ctx.rotate(c.roll);
+        ctx.fillStyle = COL.g;
+        rr(-150 * s, r + 26 * s, 150 * s, r + 106 * s, 40 * s);
+        ctx.fill();
+        ctx.fillStyle = COL.k;
+        ctx.font = font(800, 46 * s);
+        ctx.textAlign = "center";
+        ctx.fillText("4.300 €", 0, r + 82 * s);
+        ctx.textAlign = "left";
+        ctx.restore();
+      }
     }
   }
-  // la linea bianca del collasso
-  if (col > 0.01) {
-    // la linea si stringe verso il punto dove il cursore comincerà a scrivere il nome
-    const sh = spring(t, 18.1, 26), start = nameStartX();
-    const l = lerp(CX - 820, start, sh), r = lerp(CX + 820, start + 7, sh);
-    ctx.fillStyle = COL.w;
-    ctx.globalAlpha = col;
-    const tall = Math.pow(sh, 6); // resta una linea sottile finché non si è stretta, poi si alza: è il cursore
-    ctx.fillRect(l, lerp(CY - 2, CY - 20 - nameSize() * 0.78, tall), r - l, lerp(4, nameSize() * 0.95, tall));
-    ctx.globalAlpha = 1;
-  }
+  chrome(COL.s, "il tuo preventivo — la rete", "Renato Manzotti", T, false);
+  ctx.restore();
 }
-// il titolo finale, poi si cancella fino al cursore
-const NAME = "Renato Manzotti", TAG = "Siti, app e bot su misura";
-const nameSize = () => Math.min(150, 1560 / (textW(NAME, 800, 100) / 100));
-const nameStartX = () => CX - textW(NAME, 800, nameSize()) / 2;
-const NAME_T = [...NAME].map((_, i) => 18.25 + i * 0.016);
-const TAG_T = [...TAG].map((_, i) => 18.5 + i * 0.009);
-const DEL0 = 19.5;
-function drawTitle(t) {
-  bg(COL.k);
-  const nameFit = nameSize();
-  const tagSize = 66;
-  // cancellazione: prima il sottotitolo, poi il nome, una lettera alla volta
-  const delTag = Math.floor(clamp((t - DEL0) / 0.12) * TAG.length);
-  const delName = Math.floor(clamp((t - DEL0 - 0.12) / 0.23) * NAME.length);
-  let typed = 0;
-  for (const x of NAME_T) if (t >= x) typed++;
-  let nShown = Math.max(0, typed - delName);
-  const name = NAME.slice(0, nShown);
-  const wgt = 780 + 20 * kick(t);
-  const fullW = textW(NAME, 800, nameFit);
-  // durante la cancellazione il blocco resta centrato su quello che rimane
-  const remW = textW(name, 800, nameFit);
-  const x0 = lerp(CX - fullW / 2, CX - remW / 2, spring(t, DEL0 + 0.12, 30));
-  const base = CY - 20;
-  const end = spring(t, 19.8, 45);
-  if (name) {
-    ctx.font = font(wgt, nameFit);
-    ctx.fillStyle = COL.w;
-    ctx.fillText(name, x0, base);
-  }
-  // il trattino: la linea del collasso diventa la lineetta tra nome e sottotitolo
-  const dashW = (fullW * 0.18 + fullW * 0.82 * spring(t, 19.25, 20)) * spring(t, 18.5, 24) * (1 - spring(t, DEL0 + 0.08, 30));
-  if (dashW > 1) { ctx.fillStyle = COL.w; ctx.fillRect(CX - dashW / 2, CY + 34, dashW, 5); }
-  let tn = 0;
-  for (const x of TAG_T) if (t >= x) tn++;
-  tn = Math.max(0, tn - delTag);
-  if (tn > 0) {
-    const tag = TAG.slice(0, tn);
-    ctx.font = font(500, tagSize);
-    const tw = ctx.measureText(TAG).width;
-    const tx = CX - tw / 2;
-    const green = spring(t, 18.75, 26);
-    const cut = Math.min(tn, TAG.indexOf("su misura"));
-    ctx.fillStyle = COL.s;
-    ctx.fillText(tag.slice(0, cut), tx, CY + 130);
-    if (tn > cut) { ctx.fillStyle = mixCol(COL.s, COL.g, green); ctx.fillText(tag.slice(cut), tx + ctx.measureText(tag.slice(0, cut)).width, CY + 130); }
-  }
-  // il cursore: segue il testo, alla fine torna al centro come nel primo fotogramma
-  ctx.font = font(wgt, nameFit);
-  const cxText = name ? x0 + ctx.measureText(name).width + 14 : t < DEL0 ? nameStartX() : CX - 3.5;
-  const ytop = lerp(base - nameFit * 0.78, CY - CARET_H / 2, end);
-  const ch = lerp(nameFit * 0.95, CARET_H, end);
-  caret(lerp(cxText, CX - 3.5, end), ytop, ch, 7, COL.w);
-}
-function drawEnd(t) {
-  if (t < 18.25) drawNodes(t);
-  else drawTitle(t);
-}
+const netPortal = (t) => {
+  const c = netCam(t), q = pj(c, NODE.clienti.p), s = netPush(t);
+  return { kind: "circle", x: CX + (q[0] - CX) * s, y: CY + (q[1] - CY) * s, r: NODE.clienti.r * q[2] * 0.9 * s };
+};
 
 /* ------------------------------------------------------------------ */
-/* le scene e lo zoom che le collega                                    */
+/* le scene, le porte e il tuffo che le collega                         */
 /* ------------------------------------------------------------------ */
 const SCENES = [
-  { start: 0, end: 2, draw: drawHook, portal: hookPortal },
-  { start: 2, end: 6, draw: drawType, portal: typePortal },
-  { start: 6, end: 14, draw: drawShapes3D, portal: portal3D },
-  { start: 14, end: 16, draw: drawData, portal: dataPortal },
-  { start: 16, end: 20, draw: drawEnd, samples: (t) => (t > 16.95 && t < 18.12 ? 8 : 1) },
+  { start: 0, end: 2, draw: drawHook, portal: hookPortal, open: 1.25 },
+  { start: 2, end: 6, draw: drawType, portal: typePortal, open: 5.25 },
+  { start: 6, end: 14, draw: drawShapes, portal: phonePortal, open: 13.25 },
+  { start: 14, end: 16, draw: drawData, portal: dataPortal, open: 15.25 },
+  { start: 16, end: 18, draw: drawNet, portal: netPortal, open: 17.25, samples: (t) => (t > 16.9 ? 6 : 3) },
+  { start: 18, end: 20, draw: drawTitle },
 ];
 const ZOOM = 0.5;
-const zoomEase = (u) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
+// il tuffo: accelera in modo esponenziale, poi atterra frenando senza rimbalzi
+const dive = (u) => (u <= 0.8 ? (0.7 * (Math.pow(2, (7 * u) / 0.8) - 1)) / 127 : 0.7 + 0.3 * (1 - Math.pow(1 - (u - 0.8) / 0.2, 3)));
 function portalPath(p) {
   ctx.beginPath();
   if (p.kind === "circle") ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-  else if (p.poly) p.poly.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])));
-  else ctx.rect(p.x, p.y, p.w, p.h);
-  ctx.closePath();
+  else if (p.kind === "ellipse") ctx.ellipse(p.x, p.y, p.rx, p.ry, 0, 0, Math.PI * 2);
+  else ctx.roundRect(p.x, p.y, p.w, p.h, p.r ?? 0);
 }
-function seek(t) {
-  t = ((t % DUR) + DUR) % DUR;
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.globalAlpha = 1;
-  let i = SCENES.findIndex((s) => t >= s.start && t < s.end);
-  if (i < 0) i = SCENES.length - 1;
-  const S = SCENES[i], N = SCENES[i + 1];
-  const u = N && S.portal ? prog(t, S.end - ZOOM, S.end) : 0;
-  if (u <= 0) {
-    // il volo dentro la rete è troppo veloce per tre sottofotogrammi: lì si media anche dentro il sottofotogramma
-    const n = S.samples ? S.samples(t) : 1;
-    if (n <= 1) { S.draw(t); return; }
-    for (let c = 0; c < n; c++) {
-      ctx = OFF;
-      OFF.setTransform(1, 0, 0, 1, 0, 0);
-      OFF.globalAlpha = 1;
-      S.draw(t - (c / n) * (1 / 180));
-      ctx = MAIN;
-      MAIN.globalAlpha = 1 / (c + 1);
-      MAIN.drawImage(offCanvas, 0, 0);
-      MAIN.globalAlpha = 1;
-    }
-    return;
-  }
-  // zoom dentro il portale: il dettaglio della scena diventa la scena successiva
-  const p = S.portal(t);
-  const pc = p.kind === "circle" ? [p.x, p.y] : [p.x + p.w / 2, p.y + p.h / 2];
-  const k = p.kind === "circle" ? p.r / Math.hypot(W / 2, H / 2) : Math.min(p.w / W, p.h / H);
-  const Z = Math.exp(Math.log(1 / k) * zoomEase(u));
-  const f = [(CX - pc[0] / k) / (1 - 1 / k), (CY - pc[1] / k) / (1 - 1 / k)];
-  const toScreen = () => { ctx.translate(f[0], f[1]); ctx.scale(Z, Z); ctx.translate(-f[0], -f[1]); };
-  // la scena che si lascia, con un mosso radiale quando lo zoom è veloce
-  // quanto cresce lo zoom in un sottofotogramma (1/180 s): lo si riempie di copie con lo stesso peso
-  const Z0 = Math.exp(Math.log(1 / k) * zoomEase(Math.max(0, u - 1 / 180 / ZOOM)));
-  const speed = Math.log(Z / Z0);
-  const copies = Math.min(12, Math.max(1, Math.ceil(speed / 0.0035)));
-  for (let c = 0; c < copies; c++) {
-    const zc = Math.exp(Math.log(Z) - (copies > 1 ? (speed * c) / (copies - 1) : 0));
-    ctx = OFF;
-    OFF.setTransform(1, 0, 0, 1, 0, 0);
-    OFF.globalAlpha = 1;
-    OFF.save();
-    OFF.translate(f[0], f[1]); OFF.scale(zc, zc); OFF.translate(-f[0], -f[1]);
-    S.draw(t);
-    OFF.restore();
-    ctx = MAIN;
-    MAIN.globalAlpha = 1 / (c + 1);
-    MAIN.drawImage(offCanvas, 0, 0);
-    MAIN.globalAlpha = 1;
-  }
-  // la scena nuova, dentro il dettaglio
+/** Quanto bisogna ingrandire perché la porta copra tutto lo schermo. */
+function coverZoom(p) {
+  if (p.kind === "circle") return Math.hypot(W / 2, H / 2) / p.r;
+  if (p.kind === "ellipse") return Math.hypot(W / 2 / p.rx, H / 2 / p.ry);
+  return Math.max(W / p.w, H / p.h) * 1.02;
+}
+const pCenter = (p) => (p.kind === "rect" ? [p.x + p.w / 2, p.y + p.h / 2] : [p.x, p.y]);
+/** La scena dopo, dentro la porta: rimpicciolita in modo da diventare tutto lo schermo alla fine del tuffo. */
+function drawInside(p, Nx, t) {
+  const pc = pCenter(p), k = 1 / coverZoom(p);
   ctx.save();
-  toScreen();
   portalPath(p);
   ctx.clip();
   ctx.translate(pc[0], pc[1]);
   ctx.scale(k, k);
   ctx.translate(-CX, -CY);
-  N.draw(Math.max(N.start - 0.5, t));
+  Nx.draw(Math.max(Nx.start, t));
   ctx.restore();
+}
+function drawScene(S, Nx, t) {
+  S.draw(t);
+  if (Nx && S.open != null && t >= S.open) drawInside(S.portal(t), Nx, t);
+}
+function averaged(n, fn) {
+  if (n <= 1) { fn(0); return; }
+  for (let c = 0; c < n; c++) {
+    ctx = OFF;
+    OFF.setTransform(1, 0, 0, 1, 0, 0);
+    OFF.globalAlpha = 1;
+    fn(c / n);
+    ctx = MAIN;
+    MAIN.setTransform(1, 0, 0, 1, 0, 0);
+    MAIN.globalAlpha = 1 / (c + 1);
+    MAIN.drawImage(offCanvas, 0, 0);
+    MAIN.globalAlpha = 1;
+  }
+}
+function seek(t) {
+  t = ((t % DUR) + DUR) % DUR;
+  ctx = MAIN;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  let i = SCENES.findIndex((s) => t >= s.start && t < s.end);
+  if (i < 0) i = SCENES.length - 1;
+  const S = SCENES[i], Nx = SCENES[i + 1];
+  const u = Nx && S.portal ? prog(t, S.end - ZOOM, S.end) : 0;
+  if (u <= 0) {
+    const n = S.samples ? S.samples(t) : 1;
+    averaged(n, (f) => drawScene(S, Nx, t - f / 180));
+    return;
+  }
+  // il tuffo dentro la porta: il dettaglio della scena diventa la scena successiva
+  const p = S.portal(t), pc = pCenter(p), Zend = coverZoom(p), k = 1 / Zend;
+  const Z = Math.exp(Math.log(Zend) * dive(u)), Z0 = Math.exp(Math.log(Zend) * dive(Math.max(0, u - 1 / 180 / ZOOM)));
+  const f = [(CX - pc[0] / k) / (1 - 1 / k), (CY - pc[1] / k) / (1 - 1 / k)];
+  // mosso radiale: tante copie quanto cresce lo zoom in un sottofotogramma
+  const speed = Math.log(Z / Z0), copies = Math.min(12, Math.max(1, Math.ceil(speed / 0.004)));
+  averaged(copies, (c) => {
+    const zc = Math.exp(Math.log(Z) - speed * c);
+    ctx.save();
+    ctx.translate(f[0], f[1]); ctx.scale(zc, zc); ctx.translate(-f[0], -f[1]);
+    S.draw(t);
+    drawInside(p, Nx, t);
+    ctx.restore();
+  });
 }
 
 window.REEL = {
-  ready: document.fonts.load("800 100px Syne").then(() => document.fonts.load("400 100px Syne")).then(() => true),
+  ready: Promise.all([document.fonts.load("800 100px Syne"), document.fonts.load("400 100px Syne")]).then(() => true),
   seek,
   DUR,
 };

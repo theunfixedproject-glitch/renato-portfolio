@@ -365,7 +365,7 @@ export const projects: Project[] = [
     status: "realizzato",
     tagline: "Uno showreel in cui ogni scena è nascosta dentro la precedente.",
     description:
-      "Un cursore lampeggiante e uno zoom che non si ferma mai: si tuffa nel cursore e trova le parole, nella O di VIDEO e trova le forme, in un telefono 3D, nei punteggi di Lighthouse, nella rete del preventivatore, fino al nome che si cancella e torna cursore. Gira in loop senza stacchi. Ogni fotogramma è calcolato in codice, anche la musica, che va a tempo con le immagini.",
+      "Sei manifesti e uno zoom che non si ferma mai: in ogni manifesto c'è un dettaglio che contiene già, dal vivo, il successivo. Dal campo di testo con la domanda si entra nel tasto d'invio e si trovano le parole a tutto schermo, dalla O di VIDEO le forme piene, dal telefono in 3D i punteggi di Lighthouse, dall'anello dei dati il volo nella rete del preventivatore, fino al nome che si cancella e torna cursore. Gira in loop senza stacchi; ogni fotogramma è calcolato in codice, anche la musica.",
     benefits: ["Nessun taglio: ogni scena nasce dalla precedente", "Musica scritta in codice, a tempo con le immagini", "Gira in loop, perfetto per schermi e vetrine", "1920×1080 a 60 fotogrammi al secondo"],
     stack: ["Canvas 2D", "Web Audio API", "Playwright", "ffmpeg"],
     accent: "green",

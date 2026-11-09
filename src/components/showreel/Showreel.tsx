@@ -14,7 +14,7 @@ const FILMS = [
     src: "/video/dentro-il-cursore.mp4",
     poster: "/video/dentro-il-cursore-poster.jpg",
     aspect: "16/9",
-    label: "Video: un cursore lampeggiante, poi parole, forme, un telefono in 3D, i punteggi di Lighthouse e la rete del preventivatore, fino al nome Renato Manzotti.",
+    label: "Video: un campo di testo chiede Hai un'idea?, poi parole a tutto schermo, forme piene, un telefono in 3D, i punteggi di Lighthouse e il volo nella rete del preventivatore, fino al nome Renato Manzotti.",
   },
   {
     id: "la-linea",

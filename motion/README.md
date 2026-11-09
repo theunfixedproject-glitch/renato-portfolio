@@ -36,8 +36,10 @@ mattina alla notte, i pezzi che si alzano e si girano verso l'obiettivo, le tess
 
 ## Dentro il cursore — `dentro-il-cursore/`
 
-20 s, 1920×1080, 60 fps, in loop (l'ultimo fotogramma coincide con il primo). Un cursore lampeggiante e uno zoom che si tuffa
-ogni volta in un dettaglio della scena precedente.
+20 s, 1920×1080, 60 fps, in loop (l'ultimo fotogramma coincide con il primo). Versione 2: sei manifesti a pieno formato e uno
+zoom che non si ferma; in ogni manifesto c'è una porta (il tasto d'invio, la O di VIDEO, la scheda "100", l'anello dei dati,
+il nodo "clienti") che mostra già, dal vivo, il manifesto successivo prima del tuffo. Manifesti a fessure, forme piene con la
+parola in negativo, telefono 3D ombreggiato a scalini di palette, camera che si inclina nella rete.
 
 1. **Server.** `cd dentro-il-cursore && python3 -m http.server 8822`
 2. **Controlli.** `node tool.mjs stills fermi` (un fotogramma per battito) oppure `node tool.mjs stills fermi 1.6,5.7,13.7` per tempi precisi.
@@ -45,8 +47,8 @@ ogni volta in un dettaglio della scena precedente.
 4. **Render.** `bash render.sh finale`: 4 pezzi paralleli da 5 secondi a 180 fotogrammi al secondo, mediati tre alla volta con
    `tmix` di ffmpeg fino a 60 fps, poi uniti con l'audio (portato a −16 LUFS) in `finale.mp4`.
 
-In `reel.js` ci sono le scene (aggancio, tipografia cinetica, forme e 3D, dati di Lighthouse, rete del preventivatore, titolo)
-e lo zoom che le collega; in `audio.js` la colonna sonora.
+In `reel.js` ci sono i manifesti (campo di testo, tipografia, forme e telefono 3D, dati, rete, titolo), le porte e il tuffo
+che le collega (accelerazione esponenziale, atterraggio senza rimbalzi); in `audio.js` la colonna sonora, resa su due giri.
 
 ## La linea che non si stacca — `la-linea/`
 
