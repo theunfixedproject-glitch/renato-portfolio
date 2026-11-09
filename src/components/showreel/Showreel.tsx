@@ -24,7 +24,7 @@ const FILMS = [
     src: "/video/la-linea.mp4",
     poster: "/video/la-linea-poster.jpg",
     aspect: "9/16",
-    label: "Video verticale: una linea verde scrive una sola linea, poi AI, bot, app, sito; diventa un sito, un nodo, un telefono, una chat, una spirale e un grafico, e firma Renato Manzotti, siti, app e bot su misura.",
+    label: "Video verticale: una penna scrive una sola linea in tre righe, poi AI, bot, app, sito; disegna un sito, un nodo, un telefono, una chat, una spirale e un grafico, e firma Renato Manzotti, siti, app e bot su misura.",
   },
   {
     id: "una-giornata",

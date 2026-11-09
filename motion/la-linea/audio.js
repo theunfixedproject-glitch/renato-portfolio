@@ -163,6 +163,11 @@ async function renderSoundtrack() {
   whoosh(13.3, 0.22, 0.14, 1);
   for (let i = 0; i < 15; i++) tick(14.0 + i * 0.016, 2500, 0.025);
   for (let i = 0; i < 9; i++) tick(14.25 + i * 0.016, 2100, 0.025);
+  // l'inchiostro che riempie parole e forme: un tonfo morbido e un fruscio breve
+  [0.5, 1.0, 1.5, 2.25, 2.75, 3.25, 3.75, 4.36, 5.36, 5.86, 10.25, 13.75].forEach((t, i) => {
+    noiseHit(t, "lowpass", 700, 0.8, 0.004, 0.11, 0.22, i % 2 ? 0.2 : -0.2);
+    noiseHit(t, "bandpass", 2600, 1.2, 0.01, 0.06, 0.07, i % 2 ? -0.3 : 0.3);
+  });
   // il riavvolgimento: tutto torna nel punto
   whoosh(14.5, 0.48, 0.24, -1);
   // un colpo a ogni cambio di scena

@@ -50,9 +50,11 @@ e lo zoom che le collega; in `audio.js` la colonna sonora.
 
 ## La linea che non si stacca — `la-linea/`
 
-15 s, 1080×1920 (verticale), 60 fps, 120 bpm, in loop. Una sola linea, mai sollevata: scrive "una sola linea", poi AI, bot,
-app, sito; diventa un sito, un nodo in 3D, un telefono, una chat, la voce del bot (una spirale vista di fianco), un grafico;
-nell'ultima battuta tutta la storia appare come pagine in profondità rilegate dallo stesso filo, che si chiude nella firma.
+15 s, 1080×1920 (verticale), 60 fps, 120 bpm, in loop. Una sola linea, tracciata come con un pennino a punta larga e mai
+sollevata: scrive "una sola linea" in tre righe, poi AI, bot, app, sito; disegna un sito, un nodo in 3D, un telefono, una chat,
+la voce del bot (una spirale vista di fianco), un grafico; nell'ultima battuta tutta la storia appare come pagine in profondità
+rilegate dallo stesso filo, che la penna cancella mentre scrive la firma. Sui mezzi battiti l'inchiostro riempie parole e forme;
+tra un oggetto e l'altro la penna disegna il nuovo mentre la coda si porta via il vecchio.
 
 1. **Lettere.** `cd la-linea && node prep.mjs` trasforma le parole in un tracciato unico (`glyphs.json`, già pronto):
    i contorni di Fira Code appesi a un rigo, con buchi e puntini raggiunti da un trattino che va e torna.
@@ -62,7 +64,8 @@ nell'ultima battuta tutta la storia appare come pagine in profondità rilegate d
    il fruscio della penna segue la velocità della punta, letta dall'animazione.
 5. **Render.** `bash render.sh finale`: 4 pezzi paralleli da 225 fotogrammi, mosso con `tmix`, audio a −16 LUFS.
 
-In `reel.js` ci sono le forme, la sequenza (una forma per mezzo battito), la camera e il mosso che segue la velocità.
+In `reel.js` ci sono le forme, la sequenza (una forma per mezzo battito), i passaggi (trasformazione a onda dalla coda alla punta
+oppure staffetta), il nastro del pennino con lo spessore che dipende dalla direzione, i riempimenti, la camera e il mosso.
 
 ## Versioni per il sito
 

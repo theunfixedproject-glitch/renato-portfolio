@@ -346,7 +346,7 @@ export const projects: Project[] = [
     status: "realizzato",
     tagline: "Una sola linea, mai sollevata dal foglio, racconta tutto quello che faccio.",
     description:
-      "Un punto si allunga in una linea e non si stacca più: scrive le parole con le lettere vere di Fira Code, diventa un sito, si annoda in 3D, si fa telefono e chat, è la voce di un bot che si scopre essere una spirale, sale in un grafico. Nell'ultima battuta la camera si alza e tutta la storia appare come un quaderno di pagine rilegate dallo stesso filo, che si chiude nella firma. Poi la linea si riavvolge nel punto da cui era partita, e il film ricomincia.",
+      "Una penna a punta larga che non si stacca mai dal foglio: scrive \"una sola linea\" in tre righe, poi disegna un sito, un nodo in 3D, un telefono, una chat, la voce di un bot che si scopre essere una spirale e un grafico che sale. Sui mezzi battiti l'inchiostro riempie parole e forme. Nell'ultima battuta la camera si alza e tutta la storia appare come un quaderno di pagine rilegate dallo stesso filo; la penna la cancella mentre scrive la firma, poi riavvolge tutto fino al punto da cui era partita, e il film ricomincia.",
     benefits: ["Verticale 9:16, pronto per Reel, TikTok e Storie", "Un cambio a ogni mezzo battito, a 120 bpm", "Il fruscio della penna segue la velocità della linea", "Gira in loop: l'ultimo fotogramma è il primo"],
     stack: ["Canvas 2D", "opentype.js", "Web Audio API", "Playwright", "ffmpeg"],
     accent: "green",

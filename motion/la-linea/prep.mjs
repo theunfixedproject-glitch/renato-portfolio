@@ -8,7 +8,8 @@ import fs from "node:fs";
 const buf = fs.readFileSync("../node_modules/@fontsource/fira-code/files/fira-code-latin-700-normal.woff");
 const font = opentype.parse(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.length));
 
-const WORDS = { una: 300, sola: 300, linea: 300, AI: 520, bot: 380, app: 380, sito: 330, Renato: 230, Manzotti: 175 };
+// larghezza voluta di ogni parola, in pixel del fotogramma 1080×1920
+const WORDS = { una: 900, sola: 900, linea: 900, AI: 880, bot: 900, app: 880, sito: 900, Renato: 900, Manzotti: 900 };
 
 function contoursOf(text, size) {
   const cmds = font.getPath(text, 0, 0, size).commands;
@@ -95,6 +96,8 @@ function oneLine(text, size) {
   const xs = path.map((p) => p[0]), ys = path.map((p) => p[1]);
   const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
   return {
+    // il riempimento: i contorni veri del carattere, spostati come la linea
+    fill: font.getPath(text, 0, 0, size).toPathData(2), ox: -cx, oy: -cy, size,
     pts: path.map(([x, y]) => [Math.round((x - cx) * 10) / 10, Math.round((y - cy) * 10) / 10]),
     w: Math.max(...xs) - Math.min(...xs),
     h: Math.max(...ys) - Math.min(...ys),
@@ -103,7 +106,9 @@ function oneLine(text, size) {
 }
 
 const out = {};
-for (const [w, size] of Object.entries(WORDS)) {
+for (const [w, width] of Object.entries(WORDS)) {
+  const probe = oneLine(w, 300);
+  const size = Math.round((300 * width) / probe.w);
   out[w] = oneLine(w, size);
   console.log(w, out[w].pts.length, "punti", Math.round(out[w].w), "×", Math.round(out[w].h), "rigo", out[w].rail);
 }
