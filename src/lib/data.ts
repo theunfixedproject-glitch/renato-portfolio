@@ -339,6 +339,25 @@ export const projects: Project[] = [
     ],
   },
   {
+    id: "la-linea",
+    category: "graphic-motion",
+    name: "La linea che non si stacca",
+    kind: "Graphic motion · 15 secondi, verticale",
+    status: "realizzato",
+    tagline: "Una sola linea, mai sollevata dal foglio, racconta tutto quello che faccio.",
+    description:
+      "Un punto si allunga in una linea e non si stacca più: scrive le parole con le lettere vere di Fira Code, diventa un sito, si annoda in 3D, si fa telefono e chat, è la voce di un bot che si scopre essere una spirale, sale in un grafico. Nell'ultima battuta la camera si alza e tutta la storia appare come un quaderno di pagine rilegate dallo stesso filo, che si chiude nella firma. Poi la linea si riavvolge nel punto da cui era partita, e il film ricomincia.",
+    benefits: ["Verticale 9:16, pronto per Reel, TikTok e Storie", "Un cambio a ogni mezzo battito, a 120 bpm", "Il fruscio della penna segue la velocità della linea", "Gira in loop: l'ultimo fotogramma è il primo"],
+    stack: ["Canvas 2D", "opentype.js", "Web Audio API", "Playwright", "ffmpeg"],
+    accent: "green",
+    cover: "/video/la-linea-poster.jpg",
+    orientation: "portrait",
+    gallery: [],
+    videos: [
+      { src: "/video/la-linea.mp4", poster: "/video/la-linea-poster.jpg", aspect: "9/16", title: "Il film", caption: "15 secondi, 9:16, con l'audio: accendilo" },
+    ],
+  },
+  {
     id: "dentro-il-cursore",
     category: "graphic-motion",
     name: "Dentro il cursore",

@@ -30,7 +30,7 @@ export function VideoShowcase({ videos }: { videos: ProjectVideo[] }) {
   const horizontal = rest.filter((v) => v.aspect === "16/9");
   return (
     <div className="space-y-6">
-      <Clip video={main} />
+      <Clip video={main} className={main.aspect === "9/16" ? "mx-auto w-full max-w-[22rem]" : ""} />
       <div className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,1fr)] items-start gap-4 sm:gap-6">
         {vertical.map((v) => (
           <Clip key={v.src} video={v} />

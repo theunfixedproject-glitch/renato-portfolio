@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowIcon } from "../ui/Icons";
 
-/** I due film di graphic motion: fatti interamente in codice, anche la musica. */
+/** I film di graphic motion: fatti interamente in codice, anche la musica. */
 const FILMS = [
   {
     id: "dentro-il-cursore",
@@ -15,6 +15,16 @@ const FILMS = [
     poster: "/video/dentro-il-cursore-poster.jpg",
     aspect: "16/9",
     label: "Video: un cursore lampeggiante, poi parole, forme, un telefono in 3D, i punteggi di Lighthouse e la rete del preventivatore, fino al nome Renato Manzotti.",
+  },
+  {
+    id: "la-linea",
+    title: "La linea",
+    length: "15 s",
+    text: "Una sola linea che non si stacca mai, dalla prima parola alla firma.",
+    src: "/video/la-linea.mp4",
+    poster: "/video/la-linea-poster.jpg",
+    aspect: "9/16",
+    label: "Video verticale: una linea verde scrive una sola linea, poi AI, bot, app, sito; diventa un sito, un nodo, un telefono, una chat, una spirale e un grafico, e firma Renato Manzotti, siti, app e bot su misura.",
   },
   {
     id: "una-giornata",
@@ -89,7 +99,7 @@ export function Showreel() {
         </p>
       </div>
 
-      <div role="tablist" aria-label="Scegli il film" className="mb-5 grid gap-3 sm:grid-cols-2">
+      <div role="tablist" aria-label="Scegli il film" className="mb-5 grid gap-3 sm:grid-cols-3">
         {FILMS.map((f, i) => {
           const on = i === film;
           return (
@@ -116,7 +126,10 @@ export function Showreel() {
         })}
       </div>
 
-      <figure id="showreel-video" className="relative overflow-hidden rounded-[2rem] border border-line bg-ink">
+      <figure
+        id="showreel-video"
+        className={`relative overflow-hidden rounded-[2rem] border border-line bg-ink ${current.aspect === "9/16" ? "mx-auto max-w-[24rem]" : ""}`}
+      >
         <video
           key={current.id}
           ref={video}
